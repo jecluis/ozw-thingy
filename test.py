@@ -3,14 +3,20 @@ import json
 from datetime import datetime as dt, timedelta
 from typing import Dict, List
 import pprint
+from threading import Lock
 
 from pydispatch import dispatcher
+
+from prometheus_client import CollectorRegistry, Gauge, pushadd_to_gateway
 
 from openzwave.controller import ZWaveController
 from openzwave.network import ZWaveNetwork
 from openzwave.option import ZWaveOption
 from openzwave.node import ZWaveNode
 from openzwave.value import ZWaveValue
+
+
+registry = CollectorRegistry()
 
 
 def get_network_state(network):
@@ -119,6 +125,48 @@ def want_this_value(value: ZWaveValue) -> bool:
     return False
 
 
+class PrometheusExporter:
+
+    registry = CollectorRegistry()
+    gateway_url: str = '172.20.20.96:9091'
+    lock = Lock()
+
+
+    def __init__(self):
+
+        self.gauges: Dict[str, Gauge] = {}
+        for unit in ['kWh', 'W', 'V', 'A']:
+            gauge = Gauge(
+                name="consumption",
+                documentation='node {} consumption'.format(unit),
+                namespace='home',
+                unit='{}'.format(unit),
+                registry=self.registry,
+                labelnames=['node'])
+            self.gauges[unit] = gauge
+
+    
+    def handle(self, node: str, unit: str, value: float):
+        self.lock.acquire()
+        if unit not in self.gauges:
+            print("  [error] --> unrecognized unit: {}".format(unit))
+            self.lock.release()
+            return
+        gauge = self.gauges[unit]
+        gauge.labels(node).set(value)
+
+        print("[push] node={}, unit={}, value={}".format(
+            node, unit, value
+        ))
+        pushadd_to_gateway(
+            self.gateway_url,
+            job="home_energy_consumption",
+            registry=self.registry)
+        self.lock.release()
+
+
+prometheus: PrometheusExporter = PrometheusExporter()
+
 class DataValue:
 
     timestamp: dt = None
@@ -199,7 +247,12 @@ class DataNode:
                 return
         self.last_values_timestamp[unit] = datavalue.timestamp
         self.values_per_unit[unit].append(datavalue)
-        self.values.append(datavalue)
+        self.values.append(value)
+
+        node_str = 'node_{}'.format(self.node.node_id)
+        unit = str(value.units)
+        value = float(value.data)
+        prometheus.handle(node_str, unit, value)
 
 
 
@@ -304,6 +357,8 @@ class DataStore:
             for value in node.values:
                 value.refresh()
 
+        pass
+
 
     def handle_value(self, signal, **kwargs):
         # print("--> handling value ({}): {}".format(signal, kwargs))
@@ -383,8 +438,7 @@ if __name__ == '__main__':
     init_end = dt.utcnow()
     print("-- initialization took {}".format(init_end - init_start))        
 
-
-    backoff = 90 # seconds
+    backoff = 30 # seconds
     while True:
         ds.dump_to_disk()
         ds.refresh()
