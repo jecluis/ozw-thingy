@@ -1,0 +1,24 @@
+@import "~@angular/material/theming";
+
+.sidenav-container {
+  height: calc(100vh - 64px);
+}
+
+.sidenav {
+  width: 400px;
+}
+
+.mat-toolbar {
+  //background: inherit;
+  background: #E3F2FD;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.toolbar-heading {
+  padding-left: 10px;
+}

@@ -1,0 +1,25 @@
+.full-width-table {
+  width: 100%;
+}
+
+tr.node-row:hover {
+  background: whitesmoke;
+}
+
+.expanded-node-detail {
+  overflow: hidden;
+  display: block;
+  width: 100%;
+}
+
+tr.expanded-node-row:not(.expanded-node-row):hover {
+  background: whitesmoke;
+}
+
+tr.expanded-node-row:not(.expanded-node-row):active {
+  background: #efefef;
+}
+
+tr.detail-row {
+  height: 0;
+}

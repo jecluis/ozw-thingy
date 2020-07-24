@@ -1,0 +1,32 @@
+<mat-sidenav-container class="sidenav-container"
+  (backdropClick)="close_drawer()">
+  <mat-sidenav #drawer class="sidenav mat-elevation-z8" position="end"
+      [attr.role]="'navigation'"
+      [mode]="'over'"
+      [opened]="is_drawer_open === true">
+    <mat-toolbar>
+      <span>Node {{show_details_node_id}}</span>
+      <div style="width: 100%; text-align: right;">
+        <button mat-stroked-button aria-label="Close"
+        color="warn"
+        style="margin-right: 0; display: inline-block;"
+        (click)="close_drawer()">
+          Close
+        </button>
+      </div>
+    </mat-toolbar>
+    <app-node-details-tab
+      [node_id]="show_details_node_id"
+      [node_type]="show_details_node_type">
+    </app-node-details-tab>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar>
+      <span class="mat-h1 toolbar-heading">Nodes</span>
+    </mat-toolbar>
+    <app-nodes-table
+      (selected_node)="open_node_details($event)">
+    </app-nodes-table>
+    <!-- Add Content Here -->
+  </mat-sidenav-content>
+</mat-sidenav-container>

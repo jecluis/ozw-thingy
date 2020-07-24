@@ -1,0 +1,23 @@
+<div class="grid-container">
+  <h1 class="mat-h1">Dashboard</h1>
+  <mat-grid-list cols="4" rowHeight="350px">
+   
+    <mat-grid-tile [colspan]="node_table_tile.cols"
+                   [rowspan]="node_table_tile.rows">
+      <app-nodes-table class="dashboard-card"
+                       (selected_node)="toggle_node_details($event)">
+      </app-nodes-table>
+    </mat-grid-tile>
+
+    <ng-container *ngIf="show_node_details">
+      <mat-grid-tile [colspan]="node_details_tile.cols"
+                     [rowspan]="node_details_tile.rows">
+        <app-node-details-tab class="dashboard-card"
+                              [node_id]="show_node_details_id"
+                              (close_details)="close_node_details($event)">
+        </app-node-details-tab>
+      </mat-grid-tile>
+    </ng-container>
+
+  </mat-grid-list>
+</div>

@@ -1,0 +1,13 @@
+@import '~@angular/material/theming';
+
+::ng-deep.mat-tab-label,
+::ng-deep.mat-tab-label-active {
+        min-width: 10px!important;
+        padding: 3px!important;
+        margin: 3px!important;
+        width: calc((400px/4) - (4*3px));
+}
+
+.height {
+        height: calc(100vh - 54 - 64 - 64)
+}

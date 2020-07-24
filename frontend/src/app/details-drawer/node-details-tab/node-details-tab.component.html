@@ -1,0 +1,48 @@
+<div class="height">
+
+<ng-container *ngIf="detailTabs === null">
+    Loading details...
+</ng-container>
+
+<mat-tab-group dynamicHeight mat-align-tabs="center">
+    <mat-tab>
+        <ng-template mat-tab-label>
+            <label matTooltip="network operations">
+                <mat-icon>build</mat-icon>
+            </label>
+        </ng-template>
+        <app-controller-operations *ngIf="node_type === 'controller'">
+        </app-controller-operations>
+        <app-node-operations *ngIf="node_type !== 'controller'">
+        </app-node-operations>
+    </mat-tab>
+    <mat-tab>
+        <ng-template mat-tab-label>
+            <mat-icon matTooltip="node information">info</mat-icon>
+        </ng-template>
+        <app-node-details-table
+            scope="user" [node_id]="node_id"></app-node-details-table>
+    </mat-tab>
+    <mat-tab>
+        <ng-template mat-tab-label>
+            <mat-icon matTooltip="node config">settings</mat-icon>
+        </ng-template>
+        <app-node-details-table
+            scope="config" [node_id]="node_id"></app-node-details-table>
+    </mat-tab>
+    <mat-tab>
+        <ng-template mat-tab-label>
+            <mat-icon matTooltip="node system info">storage</mat-icon>
+        </ng-template>
+        <app-node-details-table
+            scope="system" [node_id]="node_id"></app-node-details-table>
+    </mat-tab>
+</mat-tab-group>
+<!--
+<button mat-stroked-button aria-label="Close"
+        color="warn" (click)="closeDetails()"
+        style="margin-right: 0; display: block;">
+    Close
+</button>
+-->
+</div>

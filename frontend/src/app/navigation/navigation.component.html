@@ -1,0 +1,40 @@
+<mat-sidenav-container class="sidenav-container" autosize>
+  <mat-sidenav #sidenav fixedInViewport
+      class="sidenav"
+      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+      [mode]="'side'"
+      [opened]="true">
+    <mat-toolbar>
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="isExpanded = !isExpanded">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+      <span *ngIf="isExpanded"
+        [class.expanded-sidenav]="isExpanded === true">Menu</span>
+    </mat-toolbar>
+    <mat-nav-list>
+      <mat-list-item>
+        <a mat-list-item routerLink="/nodes"
+            routerLinkActive="active"
+            aria-label="nodes">
+            <mat-icon
+            matTooltip="network nodes"
+            style="padding: 3px;"
+            >router</mat-icon>
+            <span *ngIf="isExpanded"
+            style="font-size: 20px;">Nodes</span>
+          </a>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <span style="padding-left: 10px;">ozw dashboard</span>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+    <!-- Add Content Here -->
+  </mat-sidenav-content>
+</mat-sidenav-container>
