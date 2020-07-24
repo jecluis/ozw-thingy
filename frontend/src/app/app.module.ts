@@ -25,6 +25,7 @@ import { NodesComponent } from './nodes/nodes.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ControllerOperationsComponent } from './details-drawer/operations/controller-operations/controller-operations.component';
 import { NodeOperationsComponent } from './details-drawer/operations/node-operations/node-operations.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -55,7 +56,8 @@ import { NodeOperationsComponent } from './details-drawer/operations/node-operat
     MatGridListModule,
     MatCardModule,
     MatMenuModule,
-    MatTooltipModule
+    MatTooltipModule,
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

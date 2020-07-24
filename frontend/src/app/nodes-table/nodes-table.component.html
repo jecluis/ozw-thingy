@@ -2,11 +2,97 @@
   <table mat-table class="full-width-table" matSort aria-label="Nodes"
   multiTemplateDataRows>
 
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+    <td mat-cell *matCellDef="let row">
+      <span>{{row.id}}</span>
+    </td>
+  </ng-container>
+  
+  <ng-template #unknown>
+    <mat-icon matTooltip="unknown">help_outline</mat-icon>
+  </ng-template>
+  <ng-container matColumnDef="product">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Product</th>
+    <td mat-cell *matCellDef="let row">
+      <span *ngIf="row.product !== 'unknown' else unknown">
+        {{row.product}}
+      </span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="type">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+    <td mat-cell *matCellDef="let row">
+      <span *ngIf="row.type !== 'unknown' else unknown">{{row.type}}</span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="state">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>State</th>
+<!--    <td mat-cell *matCellDef="let row">{{row.state}}</td> -->
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.state === 'ready'">
+        <mat-icon
+          style="color: green"
+          matTooltip="ready">check</mat-icon>
+      </ng-container>
+      <ng-container *ngIf="row.state === 'awake'">
+        <mat-icon
+          style="color: orangered"
+          matTooltip="awake">warning</mat-icon>
+      </ng-container>
+      <ng-container *ngIf="row.state === 'failed'">
+        <mat-icon
+          style="color: red"
+          matTooltip="failed">error_outline</mat-icon>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="capabilities">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Capabilities</th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngFor="let cap of row.capabilities | keyvalue">
+        <ng-container
+          *ngIf="cap.key === 'is_controller' && cap.value === true">
+          <mat-icon matTooltip="controller">sports_esports</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_routing' && cap.value === true">
+          <mat-icon matTooltip="routing">sync_alt</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_beaming' && cap.value === true">
+          <mat-icon matTooltip="beaming">wifi</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_security' && cap.value === true">
+          <mat-icon matTooltip="security device">security</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_frequent_listening' && cap.value === true">
+          <mat-icon matTooltip="frequent listening">hearing</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_listening' && cap.value === true">
+          <mat-icon matTooltip="listening">hearing</mat-icon>
+        </ng-container>
+        <ng-container
+          *ngIf="cap.key === 'is_zwaveplus' && cap.value === true">
+          <mat-icon matTooltip="z-wave plus">add_circle_outline</mat-icon>
+        </ng-container>
+      </ng-container>
+    </td>
+  </ng-container>
+  <!--
     <ng-container matColumnDef="{{column}}"
       *ngFor="let column of displayedColumns">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>{{column}}</th>
       <td mat-cell *matCellDef="let row">{{row[column]}}</td>
     </ng-container>
+
+  -->
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"

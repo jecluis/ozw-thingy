@@ -4,6 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
 import { NodesTableDataSource, NodesTableItem } from './nodes-table-datasource';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-nodes-table',
@@ -25,14 +26,16 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   dataSource: NodesTableDataSource;
 
   /** Columns displayed in the table. Columns IDs can be added, removed, or reordered. */
-  displayedColumns = ['id', 'product', 'type', 'state', 'features'];
+  displayedColumns = ['id', 'product', 'type', 'state', 'capabilities'];
   expandedNode: NodesTableItem | null;
 
   @Output() selected_node = new EventEmitter<NodesTableItem>();
 
 
+  constructor(private http: HttpClient) { }
+
   ngOnInit() {
-    this.dataSource = new NodesTableDataSource();
+    this.dataSource = new NodesTableDataSource(this.http);
     this.dataSource.loadNodes();
   }
 

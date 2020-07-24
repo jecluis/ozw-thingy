@@ -1,18 +1,20 @@
 import { DataSource } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { map } from 'rxjs/operators';
+import { map, catchError, finalize } from 'rxjs/operators';
 import { Observable, of as observableOf, merge, BehaviorSubject } from 'rxjs';
 import { TypeScriptEmitter } from '@angular/compiler';
+import { HttpClient } from '@angular/common/http';
 
 
 // TODO: Replace this with your own data model type
 export interface NodesTableRawItem {
-  id: number;
-  product: string;
-  type: number;
-  state: number;
-  features: [];
+  node_id: number;
+  product_name: string;
+  node_type: string;
+  state: string;
+  proto_stage: string;
+  capabilities: {};
 }
 
 export interface NodesTableItem {
@@ -20,7 +22,7 @@ export interface NodesTableItem {
   product: string;
   type: string;
   state: string;
-  features: [];
+  capabilities: {};
   details: string;
 }
 
@@ -52,7 +54,7 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
   nodes_data: NodesTableItem[] = [];
   private nodesSubject = new BehaviorSubject<NodesTableItem[]>([]);
 
-  constructor() {
+  constructor(private http: HttpClient) {
     super();
   }
 
@@ -117,9 +119,20 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
     let translated_items: NodesTableItem[] = [];
 
     items.forEach(item => {
-      let state = '';
-      let type = '';
+      let type = item.node_type;
+      let state = item.state;
+      let product = item.product_name;
 
+      if (type.length == 0) {
+        type = "unknown";
+      }
+      if (product.length == 0) {
+        product = "unknown";
+      }
+
+
+
+      /*
       switch (item.type) {
         case Type.CONTROLLER: type = 'controller'; break;
         case Type.LIGHT: type = 'light'; break;
@@ -137,18 +150,24 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
         case State.OTHER: state = 'other'; break;
         default: state = 'unknown';
       }
+      */
 
       translated_items.push(
-        { id: item.id, product: item.product, type: type, state: state, features: item.features, details: "just some random details :)"}
+        { 
+          id: item.node_id, product: product, type: type,
+          state: state, capabilities: item.capabilities,
+          details: "just some random details :)"
+        }
       );
     });
 
     return translated_items;
   }
 
-  _getNodes(): NodesTableItem[] {
+  _getNodes() {
 
 
+    /*
     let _products: NodesTableRawItem[] = [
       { id: 1, product: 'fibaro z-stick',
         type: Type.CONTROLLER, state: State.OTHER, features: [] },
@@ -170,13 +189,25 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
       let n = Math.floor(Math.random()*3) + 1;
       entry.state = n;
     });
-    
-    return this._translateRawToItem(_products);
+    */
+
+    //let url = 'http://192.168.1.88:31337';
+    let url='';
+    let nodes =
+      this.http.get<NodesTableRawItem[]>(url+'/api/nodes')
+        .pipe(
+          catchError( () => merge([]) ),
+          finalize( () => console.log("got nodes"))
+        )
+        .subscribe( nodes => {
+          this.nodes_data = this._translateRawToItem(nodes);
+          this.nodesSubject.next(this.nodes_data);
+          console.log("got nodes: ", nodes);
+        });
   }
 
   loadNodes() {
-    this.nodes_data = this._getNodes();
-    this.nodesSubject.next(this.nodes_data);
+    this._getNodes();
   }
 
 }
