@@ -16,17 +16,11 @@ from openzwave.value import ZWaveValue
 # requirement for catching events from openzwave lib
 from pydispatch import dispatcher
 
-# requirements to serve the API through flask
-#from klein import Klein
-import flask
-#from flask_restful import Resource, Api
-
 from typing import Optional
-from fastapi import FastAPI
 
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-#app = Klein()
-#app = flask.Flask(__name__)
 
 class ControllerExit(Exception):
     pass
@@ -82,6 +76,7 @@ class NodeInfoSimple:
     product_name: str
     node_type: str
     state: str
+    proto_stage: str
     capabilities: []
 
 
@@ -106,6 +101,33 @@ class Controller(EventHandler):
 
     def set_ozw_network(self, ozwnet : ZWaveNetwork):
         self.network = ozwnet
+
+    def _get_state_str(self, node: ZWaveNode):
+
+        state = "unknown"
+        if node.is_ready:
+            state = "ready"
+        elif node.is_failed:
+            state = "failed"
+        elif node.is_awake:
+            state = "awake"
+
+        return state
+
+    def _get_node_capabilities(self, node: ZWaveNode):
+        caps = {
+            "is_zwaveplus": node.is_zwave_plus,
+            "is_routing": node.is_routing_device,
+            "is_security": node.is_security_device,
+            "is_beaming": node.is_beaming_device,
+            "is_listening": node.is_listening_device,
+            "is_frequent_listening": node.is_frequent_listening_device
+        }
+        if node.node_id == self.network.controller.node_id:
+            caps["is_controller"] = True
+
+        return caps
+
         
     def get_nodes(self) -> Dict[int, ZWaveNode]:
         return self.network.nodes
@@ -118,24 +140,39 @@ class Controller(EventHandler):
         for nid, node in nodes.items():
             info = NodeInfoSimple()
             info.node_id = nid
+            info.product_name = node.product_name
             info.node_type = node.type
-            info.state = node.query_stage
-            info.capabilities = list(node.capabilities)
+            info.state = self._get_state_str(node)
+            info.proto_stage = node.query_stage
+            info.capabilities = \
+                self._get_node_capabilities(node)
             lst.append(info)
         return lst          
 
     def get_nodes_dict(self):
 
-        nodes = {}
+        nodes = self.get_nodes()
 
         node: ZWaveNode
-        for node in self.nodes.values():
+        for node in nodes.values():
             nodes[node.node_id] = node.to_dict(extras=["all"])
 
         return nodes
 
 
 app = FastAPI()
+
+origins = [
+    'http://192.168.1.75'
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -148,18 +185,20 @@ def serve():
         port=31337,
         debug=True)
 
-@app.get('/')
+@app.get('/api/')
 def read_root():
     return { 'hello': 'world' }
 
-@app.get('/nodes')
-def get_nodes():
+@app.get('/api/nodes')
+def get_nodes(all: bool = False):
     #nodes = controller.get_nodes_dict()
+    if all:
+        return controller.get_nodes_dict()
     nodes = controller.get_nodes_simple()
     logger.info("get nodes: {}".format(nodes))
     return nodes
 
-@app.get('/nodes/roles')
+@app.get('/api/nodes/roles')
 def get_nodes_roles():
     nodes = controller.get_nodes()
     logger.info("get node roles: nodes = {}".format(nodes))
@@ -169,7 +208,7 @@ def get_nodes_roles():
 
     return roles
 
-@app.get('/nodes/types')
+@app.get('/api/nodes/types')
 def get_nodes_types():
     nodes = controller.network.nodes
     logger.info("get node types: nodes = {}".format(nodes))
@@ -177,6 +216,47 @@ def get_nodes_types():
     for n in nodes.values():
         types[n.node_id] = n.type
     return types
+
+@app.get('/api/node/{node_id}/scope/{scope}')
+def get_node_scope(node_id: int, scope: str):
+    logger.info("get scope '{}' for node id = {}".format(
+        scope, node_id
+    ))
+
+    # we are skipping openzwave's lib's get_values() function because
+    # it kept returning a whole bunch of nothing for whatever genre we
+    # tried. Thus, we're grabbing the values outselves.
+
+    genres = ['user', 'config', 'system']
+    wanted = scope.lower()
+    if wanted not in genres:
+        # these also happen to be the ones we're supporting ;)
+        raise HTTPException(status_code=404, detail="scope not found")
+
+    nodes = controller.network.nodes
+    if node_id not in nodes:
+        raise HTTPException(status_code=404, detail="node not found")
+
+    node = nodes[node_id]
+    all_values = node.get_values()
+
+    values = []
+    value: ZWaveValue
+    for value in all_values.values():
+        if value.genre.lower() != wanted:
+            continue
+
+        # we are not interested in all the k/v in the dictionary.
+        # let's parse out what we need.
+        value_raw = value.to_dict(extras=[])
+        value_proper = {
+            'label': str(value_raw.get('label', '')),
+            'units': str(value_raw.get('units', '')),
+            'data':  str(value_raw.get('data', ''))
+        }
+        values.append(value_proper)
+
+    return values
 
 @app.on_event("startup")
 def on_startup():
