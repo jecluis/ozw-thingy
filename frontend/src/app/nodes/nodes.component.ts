@@ -22,7 +22,7 @@ export class NodesComponent {
 
   is_drawer_open: boolean = false;
   show_details_node_id: number;
-  show_details_node_type: string;
+  show_details_is_controller: boolean;
 
   close_drawer() {
     console.log("close node details drawer");
@@ -40,7 +40,8 @@ export class NodesComponent {
     let node_id: number = event.id;
     this.is_drawer_open = true;
     this.show_details_node_id = node_id;
-    this.show_details_node_type = event.type;
+    this.show_details_is_controller = 
+      (event.capabilities['is_controller'] === true);
   }
 
   constructor(private breakpointObserver: BreakpointObserver) {}

@@ -23,7 +23,6 @@ export interface NodesTableItem {
   type: string;
   state: string;
   capabilities: {};
-  details: string;
 }
 
 const enum State {
@@ -130,33 +129,10 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
         product = "unknown";
       }
 
-
-
-      /*
-      switch (item.type) {
-        case Type.CONTROLLER: type = 'controller'; break;
-        case Type.LIGHT: type = 'light'; break;
-        case Type.SENSOR: type = 'sensor'; break;
-        case Type.SHUTTER: type = 'shutter'; break;
-        case Type.SWITCH: type = 'switch'; break;
-        case Type.OTHER: type = 'other'; break;
-        default: type = 'unknown';
-      }
-
-      switch (item.state) {
-        case State.PROBE: state = 'probe'; break;
-        case State.READY: state = 'ready'; break;
-        case State.DEAD: state = 'dead'; break;
-        case State.OTHER: state = 'other'; break;
-        default: state = 'unknown';
-      }
-      */
-
       translated_items.push(
         { 
           id: item.node_id, product: product, type: type,
-          state: state, capabilities: item.capabilities,
-          details: "just some random details :)"
+          state: state, capabilities: item.capabilities
         }
       );
     });
@@ -166,32 +142,6 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
 
   _getNodes() {
 
-
-    /*
-    let _products: NodesTableRawItem[] = [
-      { id: 1, product: 'fibaro z-stick',
-        type: Type.CONTROLLER, state: State.OTHER, features: [] },
-      { id: 2, product: 'aeotec smart switch 6',
-        type: Type.SWITCH, state: State.OTHER, features: [] },
-      { id: 3, product: 'aeotec smart switch 7',
-        type: Type.SWITCH, state: State.OTHER, features: [] },
-      { id: 4, product: 'aeotec range extender 7',
-        type: Type.OTHER, state: State.OTHER, features: [] },
-      { id: 5, product: 'qubino temperature sensor',
-        type: Type.SENSOR, state: State.OTHER, features: [] },
-      { id: 6, product: 'qubino roller shutter',
-        type: Type.SHUTTER, state: State.OTHER, features: [] },
-      { id: 7, product: 'fibaro temperature sensor',
-        type: Type.SENSOR, state: State.OTHER, features: [] }
-    ];
-
-    _products.forEach(entry => {
-      let n = Math.floor(Math.random()*3) + 1;
-      entry.state = n;
-    });
-    */
-
-    //let url = 'http://192.168.1.88:31337';
     let url='';
     let nodes =
       this.http.get<NodesTableRawItem[]>(url+'/api/nodes')

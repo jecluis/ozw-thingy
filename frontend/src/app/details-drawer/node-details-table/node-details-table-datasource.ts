@@ -1,13 +1,15 @@
 import { DataSource } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { map } from 'rxjs/operators';
+import { map, catchError, finalize } from 'rxjs/operators';
 import { Observable, of as observableOf, merge, BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 
 export interface NodeDetailValue {
-  name: string;
-  value: string;
+  label: string;
+  units: string;
+  data: string;
 }
 
 export interface NodeDetailsByScope {
@@ -29,11 +31,11 @@ export class NodeDetailsTableDataSource
   paginator: MatPaginator;
   sort: MatSort;
 
-  node_details: NodeDetailsByScope;
+  node_details: NodeDetailValue[] = [];
   private node_details_subject =
-        new BehaviorSubject<NodeDetailsByScope>(undefined);
+        new BehaviorSubject<NodeDetailValue[]>([]);
 
-  constructor() {
+  constructor(private http: HttpClient) {
     super();
   }
 
@@ -52,7 +54,7 @@ export class NodeDetailsTableDataSource
     ];
 
     return merge(...dataMutations).pipe(map(() => {
-      return this.getPagedData(this.getSortedData([...this.node_details.values]));
+      return this.getPagedData(this.getSortedData([...this.node_details]));
     }));
   }
 
@@ -83,7 +85,8 @@ export class NodeDetailsTableDataSource
     return data.sort((a, b) => {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
-        case 'name': return compare(a.name, b.name, isAsc);
+        case 'label': return compare(a.label, b.label, isAsc);
+        case 'units': return compare(a.units, b.units, isAsc);
         default: return 0;
       }
     });
@@ -91,6 +94,7 @@ export class NodeDetailsTableDataSource
 
 
   // grab data from server
+  /*
   private _getDetails(node_id:number, scope: string): NodeDetailsByScope {
 
     let _details_config = [
@@ -135,10 +139,31 @@ export class NodeDetailsTableDataSource
     let ret: NodeDetailsByScope = _scopes[scope] as NodeDetailsByScope;
     return ret;
   }
+*/
 
   loadDetails(node_id: number, scope: string) {
+    /*
     this.node_details = this._getDetails(node_id, scope);
     this.node_details_subject.next(this.node_details);
+    */
+
+    if (typeof node_id !== "number" || typeof scope !== "string" ||
+        node_id <= 0 || scope.length == 0) {
+      return;
+    }
+
+    let endpoint = '/api/node/'+node_id+'/scope/'+scope;
+    let node_details =
+      this.http.get<NodeDetailValue[]>(endpoint)
+        .pipe(
+          catchError( () => merge([]) ),
+          finalize( () => console.log("got node scope"))
+        )
+        .subscribe( values => {
+          this.node_details = values;
+          console.log("values = ", values);
+          this.node_details_subject.next(this.node_details);
+        });
   }
 }
 

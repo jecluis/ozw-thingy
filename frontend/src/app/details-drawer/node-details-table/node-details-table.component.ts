@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
 import { NodeDetailsTableDataSource, NodeDetailsByScope, NodeDetailValue } from './node-details-table-datasource';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-node-details-table',
@@ -18,12 +19,12 @@ export class NodeDetailsTableComponent
   @Input() scope: string
   @Input() node_id: number;
 
-  datasource = new NodeDetailsTableDataSource();
+  datasource = new NodeDetailsTableDataSource(this.http);
 
   /** Columns displayed in the table. Columns IDs can be added, removed, or reordered. */
-  displayedColumns = ['name', 'value'];
+  displayedColumns = ['label', 'units', 'data'];
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     console.log("init datasource for scope ", this.scope);

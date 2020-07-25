@@ -11,9 +11,9 @@
                 <mat-icon>build</mat-icon>
             </label>
         </ng-template>
-        <app-controller-operations *ngIf="node_type === 'controller'">
+        <app-controller-operations *ngIf="node_is_controller === true">
         </app-controller-operations>
-        <app-node-operations *ngIf="node_type !== 'controller'">
+        <app-node-operations *ngIf="node_is_controller !== true">
         </app-node-operations>
     </mat-tab>
     <mat-tab>

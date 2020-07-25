@@ -18,7 +18,7 @@ export class NodeDetailsTabComponent implements OnInit, OnChanges {
 
   detailTabs: NodeDetailsTab[];
   @Input() node_id: number;
-  @Input() node_type: string;
+  @Input() node_is_controller: boolean;
   @Output() close_details = new EventEmitter<boolean>();
 
   constructor() { }
