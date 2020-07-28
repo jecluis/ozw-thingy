@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from ..controller import Controller, controller
+from ..network import NetworkRunningException
 
 logger = logging.getLogger(__name__)
 
@@ -10,15 +11,23 @@ router = APIRouter()
 @router.get('/')
 def get_nodes(all: bool = False):
     #nodes = controller.get_nodes_dict()
-    if all:
-        return controller.get_nodes_dict()
-    nodes = controller.get_nodes_simple()
+    try:
+        if all:
+            return controller.get_nodes_dict()
+        nodes = controller.get_nodes_simple()
+    except NetworkRunningException:
+        raise HTTPException(status_code=428, detail="network not running")
+
     logger.info("get nodes: {}".format(nodes))
     return nodes
 
 @router.get('/roles')
 def get_nodes_roles():
-    nodes = controller.get_nodes()
+    try:
+        nodes = controller.get_nodes()
+    except NetworkRunningException:
+        raise HTTPException(status_code=428, detail="network not running")
+    
     logger.info("get node roles: nodes = {}".format(nodes))
     roles = {}
     for n in nodes.values():
@@ -28,7 +37,10 @@ def get_nodes_roles():
 
 @router.get('/types')
 def get_nodes_types():
-    nodes = controller.network.nodes
+    try:
+        nodes = controller.get_nodes()
+    except NetworkRunningException:
+        raise HTTPException(status_code=428, detail="network not running")
     logger.info("get node types: nodes = {}".format(nodes))
     types = {}
     for n in nodes.values():
@@ -42,42 +54,7 @@ def get_node_scope(node_id: int, scope: str):
     ))
 
     return get_node_values(node_id, scope)
-    """
-    # we are skipping openzwave's lib's get_values() function because
-    # it kept returning a whole bunch of nothing for whatever genre we
-    # tried. Thus, we're grabbing the values outselves.
-
-    genres = ['user', 'config', 'system']
-    wanted = scope.lower()
-    if wanted not in genres:
-        # these also happen to be the ones we're supporting ;)
-        raise HTTPException(status_code=404, detail="scope not found")
-
-    nodes = controller.network.nodes
-    if node_id not in nodes:
-        raise HTTPException(status_code=404, detail="node not found")
-
-    node = nodes[node_id]
-    all_values = node.get_values()
-
-    values = []
-    value: ZWaveValue
-    for value in all_values.values():
-        if value.genre.lower() != wanted:
-            continue
-
-        # we are not interested in all the k/v in the dictionary.
-        # let's parse out what we need.
-        value_raw = value.to_dict(extras=[])
-        value_proper = {
-            'label': str(value_raw.get('label', '')),
-            'units': str(value_raw.get('units', '')),
-            'data':  str(value_raw.get('data', ''))
-        }
-        values.append(value_proper)
-
-    return values
-    """
+ 
 
 @router.get('/{node_id}/values')
 def get_node_values(node_id: int, scope: str = None):
@@ -87,7 +64,10 @@ def get_node_values(node_id: int, scope: str = None):
     # it kept returning a whole bunch of nothing for whatever genre we
     # tried. Thus, we're grabbing the values outselves.
 
-    nodes = controller.network.nodes
+    try:
+        nodes = controller.get_nodes()
+    except NetworkRunningException:
+        raise HTTPException(status_code=428, detail="network not running")
     if node_id not in nodes:
         raise HTTPException(status_code=404, detail="node not found")
 

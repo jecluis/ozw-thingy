@@ -55,6 +55,7 @@ def on_startup():
 
 def main():
 
+    """
     options = ZWaveOption(device='/dev/ttyACM0')
     options.set_log_file('ozw-rest.ozw.log')
     options.set_append_log_file(True)
@@ -67,6 +68,9 @@ def main():
     controller.set_ozw_network(network)
 
     network.start()
+    """
+
+    logger.info("starting ozw-rest...")
 
     # possibly refresh here?
     

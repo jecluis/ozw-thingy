@@ -13,6 +13,7 @@ from pydispatch import dispatcher
 
 from .eventhandler import EventHandler
 from .node import NodeInfoSimple
+from .network import NetworkController
 
 
 logger = logging.getLogger(__name__)
@@ -27,9 +28,7 @@ class Controller(EventHandler):
 
     def __init__(self):
         super().__init__()
-        self.network = None
-        self.network_device = None
-        self.network_has_started = False
+        self.networkctrl = NetworkController()
 
 
     def handle_signal(signum, frame):
@@ -44,8 +43,8 @@ class Controller(EventHandler):
         logger.debug(f"handle value for node {node_id}")
         pass
 
-    def set_ozw_network(self, ozwnet : ZWaveNetwork):
-        self.network = ozwnet
+    def get_network_controller(self):
+        return self.networkctrl
 
     def _get_state_str(self, node: ZWaveNode):
 
@@ -68,14 +67,16 @@ class Controller(EventHandler):
             "is_listening": node.is_listening_device,
             "is_frequent_listening": node.is_frequent_listening_device
         }
-        if node.node_id == self.network.controller.node_id:
+        ozw_controller = self.networkctrl.get_controller()
+        if node.node_id == ozw_controller.node_id:
             caps["is_controller"] = True
 
         return caps
 
         
     def get_nodes(self) -> Dict[int, ZWaveNode]:
-        return self.network.nodes
+        # this can throw. let the caller handle it.
+        return self.networkctrl.nodes
 
     def get_nodes_simple(self) -> List[NodeInfoSimple]:
         lst = []
@@ -103,12 +104,6 @@ class Controller(EventHandler):
             nodes[node.node_id] = node.to_dict(extras=["all"])
 
         return nodes
-
-    def is_network_started(self):
-        return self.network_has_started
-
-    def get_network_device(self):
-        return self.network_device if self.network_device else ''
 
 
 # create global controller instance
