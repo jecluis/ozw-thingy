@@ -23,6 +23,10 @@
   <mat-sidenav-content>
     <mat-toolbar>
       <span class="mat-h1 toolbar-heading">Nodes</span>
+      <span style="flex: 1 1 auto"></span>
+      <span class="toolbar-heading">
+        < network: <strong>{{getNetworkState() | uppercase }}</strong> >
+      </span>
     </mat-toolbar>
     <app-nodes-table
       (selected_node)="open_node_details($event)">

@@ -4,6 +4,7 @@ import { Observable, Observer } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { NodesTableComponent } from '../nodes-table/nodes-table.component';
 import { NodesTableItem } from '../nodes-table/nodes-table-datasource';
+import { NetworkService } from '../network/network.service';
 
 @Component({
   selector: 'app-nodes',
@@ -13,12 +14,6 @@ import { NodesTableItem } from '../nodes-table/nodes-table-datasource';
 export class NodesComponent {
 
   @ViewChild(NodesTableComponent) nodes_table: NodesTableComponent;
-
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches),
-      shareReplay()
-    );
 
   is_drawer_open: boolean = false;
   show_details_node_id: number;
@@ -44,6 +39,10 @@ export class NodesComponent {
       (event.capabilities['is_controller'] === true);
   }
 
-  constructor(private breakpointObserver: BreakpointObserver) {}
+  getNetworkState(): string {
+    return this.network.getState().toString();
+  }
+
+  constructor(private network: NetworkService) {}
 
 }
