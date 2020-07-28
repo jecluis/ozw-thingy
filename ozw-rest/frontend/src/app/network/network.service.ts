@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subscription, interval, of } from 'rxjs';
+import { Subscription, interval, of, BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { catchError, finalize } from 'rxjs/operators';
 
@@ -27,6 +27,9 @@ export class NetworkService {
   state: ControllerState = ControllerState.UNKNOWN;
   status: NetworkStatusItem;
   private state_update_subscription: Subscription;
+  private state_subject_observer =
+    new BehaviorSubject<ControllerState>(undefined);
+  
 
   constructor(private http: HttpClient) {
     this.state_update_subscription = interval(30000).subscribe(
@@ -34,7 +37,6 @@ export class NetworkService {
     )
     this.obtainNetworkState()
   }
-
 
   private obtainNetworkState() {
     console.log("obtaining network state");
@@ -45,6 +47,7 @@ export class NetworkService {
       .subscribe( status => {
         console.log("got network status: ", status);
         this.setNetworkState(status);
+        this.state_subject_observer.next(this.get_state());
       },
       err => {
         console.log("unable to obtain network status")
@@ -65,8 +68,12 @@ export class NetworkService {
     }
   }
 
-  getState(): ControllerState {
+  get_state(): ControllerState {
     return this.state
+  }
+
+  get_state_observer(): BehaviorSubject<ControllerState> {
+    return this.state_subject_observer;
   }
 
   is_running() {

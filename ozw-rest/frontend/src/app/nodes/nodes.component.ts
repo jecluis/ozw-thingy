@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable, Observer } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -11,13 +11,23 @@ import { NetworkService } from '../network/network.service';
   templateUrl: './nodes.component.html',
   styleUrls: ['./nodes.component.scss']
 })
-export class NodesComponent {
+export class NodesComponent implements OnInit {
 
   @ViewChild(NodesTableComponent) nodes_table: NodesTableComponent;
 
   is_drawer_open: boolean = false;
   show_details_node_id: number;
   show_details_is_controller: boolean;
+
+  network_state: string;
+
+  ngOnInit() {
+    this.network.get_state_observer()
+      .subscribe( state => {
+        console.log("nodes > updating network state to ", state)
+        this.network_state = state;
+      });
+  }
 
   close_drawer() {
     console.log("close node details drawer");
@@ -40,7 +50,7 @@ export class NodesComponent {
   }
 
   getNetworkState(): string {
-    return this.network.getState().toString();
+    return this.network.get_state().toString();
   }
 
   constructor(private network: NetworkService) {}
