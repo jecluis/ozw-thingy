@@ -87,6 +87,42 @@ class NetworkController:
         logger.info("stopped z-wave network")
         self.network_lock.release()
 
+    def _find_best_device(self):
+
+        from pathlib import Path
+        p = Path('/dev')
+        p.resolve()
+
+        potential_matches = []
+        for dev in p.iterdir():
+            dev_name = str(dev)
+            if not dev.is_char_device():
+                continue
+
+            if dev_name.startswith('/dev/ttyACM'):
+                potential_matches.append(dev)
+
+        if len(potential_matches) == 0:
+            return False
+
+        # Assume the latest device is the one we're looking for.
+        # Our reasoning is simply due to past experience with plugging and
+        # unplugging the device -- sometimes there's an artifact left behind
+        # (say, ttyACM0) while the "new" device is now living on with a new
+        # name (say, ttyACM1).
+        #
+        # At the moment we won't support multiple devices because
+        #   1) we have no idea how to differentiate a real device
+        #      from an artifact;
+        #   2) we really don't want to ask the user to tell us.
+        #
+        # For now this works for our intended purposes, as we only
+        # have one device and shows as an ACM. once we get our hands
+        # on a second controller, we can play a bit more with this.
+        self.network_device = str(potential_matches[-1])
+        logger.info(f"found potential candidate: {self.network_device}")
+        return True
+
     """
         While we return true if we schedule the thread, this is not an
         indication that the network has been started. It will be up to
@@ -100,7 +136,10 @@ class NetworkController:
             raise NetworkRunningException("can't start a running network")
 
         if not self.network_device:
-            raise DeviceNotSetException("can't start network with a device")
+            logger.info("attempt to find best candidate device!")
+            if not self._find_best_device():
+                raise DeviceNotSetException(
+                    "can't start network without a device")
 
         if self.is_starting():
             # someone else is already doing the same, leave.
