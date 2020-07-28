@@ -28,6 +28,18 @@
             style="font-size: 20px;">Nodes</span>
           </a>
       </mat-list-item>
+      <mat-list-item>
+        <a mat-list-item routerLink="/settings"
+            routerLinkActive="active"
+            aria-label="settings">
+            <mat-icon
+            matTooltip="global settings"
+            style="padding: 3px;"
+            >settings</mat-icon>
+            <span *ngIf="isExpanded"
+            style="font-size: 20px;">Settings</span>
+          </a>
+        </mat-list-item>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>

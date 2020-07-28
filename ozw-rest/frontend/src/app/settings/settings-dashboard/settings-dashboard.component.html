@@ -1,0 +1,56 @@
+<div class="grid-container">
+  <h1 class="mat-h1">Global Settings</h1>
+  <mat-grid-list cols="2" rowHeight="150px">
+
+    <mat-grid-tile colspan=2 rowspan=1>
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>
+            Network Status
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content
+            style="padding-top: 10px; padding-right: 30px; padding-left: 30px"
+            fxLayout="row"
+            fxLayoutAlign="space-between center">
+          <div [ngSwitch]="network_state" style="font-size: 24px;">
+            <ng-container *ngSwitchCase="'started'">
+              <span style="color: green">STARTED</span>
+            </ng-container>
+            <ng-container *ngSwitchCase="'stopped'">
+              <span style="color: red">STOPPED</span>
+            </ng-container>
+            <ng-container *ngSwitchCase="'unknown'">
+              <span style="color: indigo">UNKNOWN</span>
+            </ng-container>
+            <ng-container *ngSwitchCase="'running'">
+              <span style="color: green">RUNNING</span>
+            </ng-container>
+            <ng-container *ngSwitchCase="'stopping'">
+              <span style="color: orange">STOPPING</span>
+            </ng-container>
+            <ng-container *ngSwitchDefault>???</ng-container>
+          </div>
+          <div [ngSwitch]="network_state">
+            <button *ngSwitchCase="'stopped'"
+              mat-stroked-button color="primary">Start</button>
+            <button *ngSwitchCase="'running'"
+              mat-raised-button color="warn">Stop</button>
+            <button *ngSwitchDefault
+              mat-stroked-button color="disabled">Start</button>
+          </div>
+          <div>
+            /dev/mynetworkdev
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+    
+    <mat-grid-tile colspan=2 rowspan=4>
+      <div class="dashboard-form">
+      <!-- more settings here please -->
+      </div>
+    </mat-grid-tile>
+
+  </mat-grid-list>
+</div>

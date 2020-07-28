@@ -26,6 +26,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ControllerOperationsComponent } from './details-drawer/operations/controller-operations/controller-operations.component';
 import { NodeOperationsComponent } from './details-drawer/operations/node-operations/node-operations.component';
 import { HttpClientModule } from '@angular/common/http';
+import { SettingsDashboardComponent } from './settings/settings-dashboard/settings-dashboard.component';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule } from '@angular/material/radio';
+import { ReactiveFormsModule } from '@angular/forms';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 
 @NgModule({
@@ -38,6 +44,7 @@ import { HttpClientModule } from '@angular/common/http';
     NodesComponent,
     ControllerOperationsComponent,
     NodeOperationsComponent,
+    SettingsDashboardComponent,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +65,11 @@ import { HttpClientModule } from '@angular/common/http';
     MatMenuModule,
     MatTooltipModule,
     HttpClientModule,
+    MatInputModule,
+    MatSelectModule,
+    MatRadioModule,
+    ReactiveFormsModule,
+    FlexLayoutModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
