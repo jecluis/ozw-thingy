@@ -6,6 +6,7 @@ import { NodesTableDataSource, NodesTableItem } from './nodes-table-datasource';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { HttpClient } from '@angular/common/http';
 import { Subscription, interval } from 'rxjs';
+import { NetworkService } from '../network/network.service';
 
 @Component({
   selector: 'app-nodes-table',
@@ -34,14 +35,16 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
 
   private data_update_subscription: Subscription;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private network: NetworkService) { }
 
   ngOnInit() {
     this.dataSource = new NodesTableDataSource(this.http);
-    this.dataSource.loadNodes();
+    this.load_nodes();
 
     this.data_update_subscription = interval(20000).subscribe(
-      (val) => { this.dataSource.loadNodes(); }
+      (val) => { this.load_nodes(); }
     );
   }
 
@@ -56,5 +59,11 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   toggle_details(node: NodesTableItem) {
     console.log("toggle details for node: ", node);
     this.selected_node.next(node);
+  }
+
+  private load_nodes() {
+    if (this.network.is_running()) {
+      this.dataSource.loadNodes();
+    }
   }
 }

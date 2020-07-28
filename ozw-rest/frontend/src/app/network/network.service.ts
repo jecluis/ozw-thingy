@@ -68,4 +68,8 @@ export class NetworkService {
   getState(): ControllerState {
     return this.state
   }
+
+  is_running() {
+    return (!!this.status && this.status.is_running);
+  }
 }
