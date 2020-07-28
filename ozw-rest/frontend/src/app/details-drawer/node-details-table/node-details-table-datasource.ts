@@ -92,55 +92,6 @@ export class NodeDetailsTableDataSource
     });
   }
 
-
-  // grab data from server
-  /*
-  private _getDetails(node_id:number, scope: string): NodeDetailsByScope {
-
-    let _details_config = [
-      { name: "node id", value: ""+node_id },
-      { name: "config_foo", value: "123" },
-      { name: "config_bar", value: "234" }
-    ];
-
-    let _details_user = [
-      { name: "user_foo", value: ""+Math.floor(Math.random()*3) },
-      { name: "user_bar", value: "sdfsdf" }
-    ];
-
-    let _details_system: NodeDetailValue[] = [
-      { name: "listener", value: "true" },
-      { name: "beamer", value: "true" }
-    ];
-
-    let _scopes: { [key: string]: NodeDetailsByScope} = {
-      'config': {
-        scope: 'config',
-        scope_id: 1,
-        values: _details_config
-      },
-      'user': {
-        scope: 'user',
-        scope_id: 2,
-        values: _details_user
-      },
-      'system': {
-        scope: 'system',
-        scope_id: 3,
-        values: _details_system
-      }
-    };
-
-    if (scope != 'config' && scope != 'user' && scope != 'system') {
-      console.error('unrecognized scope ' + scope);
-      return null;
-    }
-
-    let ret: NodeDetailsByScope = _scopes[scope] as NodeDetailsByScope;
-    return ret;
-  }
-*/
-
   loadDetails(node_id: number, scope: string) {
     /*
     this.node_details = this._getDetails(node_id, scope);
