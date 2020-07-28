@@ -69,22 +69,9 @@ def on_startup():
     thread.start()
 
 def main():
-
-    """
-    options = ZWaveOption(device='/dev/ttyACM0')
-    options.set_log_file('ozw-rest.ozw.log')
-    options.set_append_log_file(True)
-    options.set_console_output(False)
-    options.set_logging(True)
-    options.lock()
-
-    network = ZWaveNetwork(options, autostart=False)
-    logger.info("starting zwave network")
-    controller.set_ozw_network(network)
-
-    network.start()
-    """
-
+    # we know this function is not needed, nor is its thread.
+    # we're leaving it though, so we don't forget how to run an
+    # on_startup event ;) and it dies out pretty quickly anyway.
     logger.info("starting ozw-rest...")
 
     # possibly refresh here?
