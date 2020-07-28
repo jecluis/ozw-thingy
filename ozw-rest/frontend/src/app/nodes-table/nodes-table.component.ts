@@ -40,7 +40,7 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
     this.dataSource = new NodesTableDataSource(this.http);
     this.dataSource.loadNodes();
 
-    this.data_update_subscription = interval(10000).subscribe(
+    this.data_update_subscription = interval(20000).subscribe(
       (val) => { this.dataSource.loadNodes(); }
     );
   }
