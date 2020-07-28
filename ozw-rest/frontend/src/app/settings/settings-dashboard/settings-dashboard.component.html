@@ -33,14 +33,25 @@
           </div>
           <div [ngSwitch]="network_state">
             <button *ngSwitchCase="'stopped'"
-              mat-stroked-button color="primary">Start</button>
+              mat-stroked-button color="primary"
+              (click)="start_network()">Start</button>
             <button *ngSwitchCase="'running'"
-              mat-raised-button color="warn">Stop</button>
+              mat-raised-button color="warn"
+              (click)="stop_network()">Stop</button>
             <button *ngSwitchDefault
               mat-stroked-button color="disabled">Start</button>
           </div>
-          <div>
-            /dev/mynetworkdev
+          <div><strong>Device: </strong>
+            <ng-template
+                [ngIf]="network_status && network_status.device !== ''"
+                [ngIfElse]="showUnknownDev">
+              <span>
+                {{network_status.device}}
+              </span>
+            </ng-template>
+            <ng-template #showUnknownDev>
+              <span>unknown</span>
+            </ng-template>
           </div>
         </mat-card-content>
       </mat-card>
