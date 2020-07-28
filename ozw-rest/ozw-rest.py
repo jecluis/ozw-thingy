@@ -53,7 +53,7 @@ app.include_router(
 
 app.include_router(
     api_network.router,
-    prefix='/network'
+    prefix='/api/network'
 )
 
 @app.get('/api/')
