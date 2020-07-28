@@ -4,32 +4,30 @@
 
     <mat-grid-tile colspan=2 rowspan=1>
       <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>
-            Network Status
-          </mat-card-title>
-        </mat-card-header>
         <mat-card-content
             style="padding-top: 10px; padding-right: 30px; padding-left: 30px"
             fxLayout="row"
             fxLayoutAlign="space-between center">
-          <div [ngSwitch]="network_state" style="font-size: 24px;">
-            <ng-container *ngSwitchCase="'started'">
-              <span style="color: green">STARTED</span>
-            </ng-container>
-            <ng-container *ngSwitchCase="'stopped'">
-              <span style="color: red">STOPPED</span>
-            </ng-container>
-            <ng-container *ngSwitchCase="'unknown'">
-              <span style="color: indigo">UNKNOWN</span>
-            </ng-container>
-            <ng-container *ngSwitchCase="'running'">
-              <span style="color: green">RUNNING</span>
-            </ng-container>
-            <ng-container *ngSwitchCase="'stopping'">
-              <span style="color: orange">STOPPING</span>
-            </ng-container>
-            <ng-container *ngSwitchDefault>???</ng-container>
+          <div fxLayout="column">
+            <div>Network State</div>
+            <div [ngSwitch]="network_state" style="font-size: 24px;">
+              <ng-container *ngSwitchCase="'started'">
+                <span style="color: green">STARTED</span>
+              </ng-container>
+              <ng-container *ngSwitchCase="'stopped'">
+                <span style="color: red">STOPPED</span>
+              </ng-container>
+              <ng-container *ngSwitchCase="'unknown'">
+                <span style="color: indigo">UNKNOWN</span>
+              </ng-container>
+              <ng-container *ngSwitchCase="'running'">
+                <span style="color: green">RUNNING</span>
+              </ng-container>
+              <ng-container *ngSwitchCase="'stopping'">
+                <span style="color: orange">STOPPING</span>
+              </ng-container>
+              <ng-container *ngSwitchDefault>???</ng-container>
+            </div>
           </div>
           <div [ngSwitch]="network_state">
             <button *ngSwitchCase="'stopped'"
@@ -41,17 +39,20 @@
             <button *ngSwitchDefault
               mat-stroked-button color="disabled">Start</button>
           </div>
-          <div><strong>Device: </strong>
-            <ng-template
-                [ngIf]="network_status && network_status.device !== ''"
-                [ngIfElse]="showUnknownDev">
-              <span>
-                {{network_status.device}}
-              </span>
-            </ng-template>
-            <ng-template #showUnknownDev>
-              <span>unknown</span>
-            </ng-template>
+          <div fxLayout="column">
+            <div>Device</div>
+            <div style="font-size: 24px;">
+              <ng-template
+                  [ngIf]="network_status && network_status.device !== ''"
+                  [ngIfElse]="showUnknownDev">
+                <span>
+                  {{network_status.device}}
+                </span>
+              </ng-template>
+              <ng-template #showUnknownDev>
+                <span>unknown</span>
+              </ng-template>
+            </div>
           </div>
         </mat-card-content>
       </mat-card>

@@ -84,6 +84,7 @@ class NetworkController:
         self.network.stop()
         self.network_is_stopping = False
         self.network_is_running = False
+        self.network = None
         logger.info("stopped z-wave network")
         self.network_lock.release()
 

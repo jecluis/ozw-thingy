@@ -40,16 +40,34 @@ export class SettingsDashboardComponent implements OnInit {
           this.network.refresh_state();
         },
         err => {
+          console.log("error starting network: ", err.error.detail);
           this.action_snack.open(
             "error starting network: "+err.error.detail,
             "Gotcha!", { duration: 10000 });
-          console.log("error starting network: ", err.error.detail);
         }
       )      
   }
 
   stop_network() {
     console.info("stop network")
+    this.network.stop_network()
+      .subscribe(
+        res => {
+          console.log("stopped network");
+          this.action_snack.open(
+            "network is stopping. Please wait...",
+            "Thanks!", {duration: 5000}
+          );
+          this.network.refresh_state();
+        },
+        err => {
+          console.log("error stopping network: ", err.error.detail);
+          this.action_snack.open(
+            "error stopping network: "+err.error.detail,
+            "Gotcha!", { duration: 10000}
+          );
+        }
+      )
 
   }
 }

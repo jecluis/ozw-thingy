@@ -6,7 +6,7 @@ import { catchError, finalize } from 'rxjs/operators';
 
 export enum ControllerState {
   STARTING  = "started",
-  STOPPING  = "stopped",
+  STOPPING  = "stopping",
   RUNNING   = "running",
   STOPPED   = "stopped",
   UNKNOWN   = "unknown"
@@ -105,6 +105,6 @@ export class NetworkService {
   }
 
   stop_network() {
-
+    return this.http.put("/api/network/stop", true);
   }
 }
