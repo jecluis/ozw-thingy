@@ -103,7 +103,7 @@ export class NodeDetailsTableDataSource
       return;
     }
 
-    let endpoint = '/api/node/'+node_id+'/scope/'+scope;
+    let endpoint = '/api/nodes/'+node_id+'/scope/'+scope;
     let node_details =
       this.http.get<NodeDetailValue[]>(endpoint)
         .pipe(
