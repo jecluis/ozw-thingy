@@ -32,6 +32,29 @@
     <th mat-header-cell *matHeaderCellDef mat-sort-header>State</th>
 <!--    <td mat-cell *matCellDef="let row">{{row.state}}</td> -->
     <td mat-cell *matCellDef="let row">
+      <ng-container [ngSwitch]="row.state">
+        <ng-container *ngSwitchCase="'ready'">
+          <mat-icon
+            style="color: green"
+            matTooltip="ready">check</mat-icon>
+        </ng-container>
+        <ng-container *ngSwitchCase="'awake'">
+          <mat-icon
+            style="color: indigo"
+            matTooltip="awake">visibility</mat-icon>
+        </ng-container>
+        <ng-container *ngSwitchCase="'failed'">
+          <mat-icon
+            style="color: red"
+            matTooltip="failed">error_outline</mat-icon>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+          <mat-icon
+            style="color: grey"
+            matTooltip="sleeping">visibility_off</mat-icon>
+        </ng-container>
+      </ng-container>
+      <!--
       <ng-container *ngIf="row.state === 'ready'">
         <mat-icon
           style="color: green"
@@ -40,13 +63,14 @@
       <ng-container *ngIf="row.state === 'awake'">
         <mat-icon
           style="color: indigo"
-          matTooltip="awake">warning</mat-icon>
+          matTooltip="awake">visibility</mat-icon>
       </ng-container>
       <ng-container *ngIf="row.state === 'failed'">
         <mat-icon
           style="color: red"
           matTooltip="failed">error_outline</mat-icon>
       </ng-container>
+      -->
     </td>
   </ng-container>
 

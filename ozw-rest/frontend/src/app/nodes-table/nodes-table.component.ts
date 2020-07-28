@@ -5,6 +5,7 @@ import { MatTable } from '@angular/material/table';
 import { NodesTableDataSource, NodesTableItem } from './nodes-table-datasource';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { HttpClient } from '@angular/common/http';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-nodes-table',
@@ -31,12 +32,17 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
 
   @Output() selected_node = new EventEmitter<NodesTableItem>();
 
+  private data_update_subscription: Subscription;
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.dataSource = new NodesTableDataSource(this.http);
     this.dataSource.loadNodes();
+
+    this.data_update_subscription = interval(10000).subscribe(
+      (val) => { this.dataSource.loadNodes(); }
+    );
   }
 
   ngAfterViewInit() {
