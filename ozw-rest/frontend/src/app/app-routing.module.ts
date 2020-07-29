@@ -5,8 +5,10 @@ import { SettingsDashboardComponent } from './settings/settings-dashboard/settin
 
 
 const routes: Routes = [
+  { path: '', component: SettingsDashboardComponent },
   { path: 'nodes', component: NodesComponent },
-  { path: 'settings', component: SettingsDashboardComponent }
+  { path: 'settings', component: SettingsDashboardComponent },
+  { path: '**', component: SettingsDashboardComponent }
 ];
 
 @NgModule({
