@@ -164,6 +164,10 @@ export class NetworkService {
     return !!this.network_state && this.network_state.is_started;
   }
 
+  is_available() {
+    return this.is_started() || this.is_awake() || this.is_ready();
+  }
+
   start_network() {
     return this.http.put("/api/network/start", true);
   }

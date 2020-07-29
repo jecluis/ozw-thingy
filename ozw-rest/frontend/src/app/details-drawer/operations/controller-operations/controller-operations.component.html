@@ -1,25 +1,31 @@
 <mat-selection-list [multiple]="false">
 
-    <mat-list-option style="justify-content: left;">
+    <mat-list-option style="justify-content: left;"
+            (click)="add_node()">
         <mat-icon mat-list-icon>add_circle</mat-icon>
         <span>Add Node</span>
     </mat-list-option>
 
-    <mat-list-option>
+    <mat-list-option (click)="remove_node()">
         <mat-icon mat-list-icon>remove_circle</mat-icon>
         <span>Remove Node</span>
     </mat-list-option>
+
     <mat-divider></mat-divider>
-    <mat-list-option>
+
+    <mat-list-option (click)="heal_network()">
         <mat-icon mat-list-icon>healing</mat-icon>
         <span>Heal Network</span>
     </mat-list-option>
-    <mat-list-option>
+
+    <mat-list-option (click)="update_neighbors()">
         <mat-icon mat-list-icon>sync_alt</mat-icon>
         <span>Update Neighbors</span>
     </mat-list-option>
+
     <mat-divider></mat-divider>
-    <mat-list-option>
+
+    <mat-list-option (click)="refresh_informations()">
         <mat-icon mat-list-icon>refresh</mat-icon>
         <span>Refresh Information</span>
     </mat-list-option>
