@@ -14,12 +14,18 @@ network_ctrl: NetworkController = state.get_network_controller()
 @router.get('/status')
 def get_network_status():
     assert network_ctrl
-    return {
-        'is_running': network_ctrl.is_running(),
-        'is_starting': network_ctrl.is_starting(),
-        'is_stopping': network_ctrl.is_stopping(),
+    server_state = {
+        'is_running': network_ctrl.is_server_running(),
+        'is_starting': network_ctrl.is_server_starting(),
+        'is_stopping': network_ctrl.is_server_stopping(),
         'device': network_ctrl.get_device()
     }
+    network_state = network_ctrl.get_network_state().to_dict()
+    return {
+        'server': server_state,
+        'network': network_state
+    }
+    
 
 @router.get('/device')
 def get_network_device():

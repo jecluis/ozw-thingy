@@ -71,7 +71,9 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   }
 
   private load_nodes() {
-    if (this.network.is_started()) {
+    if (this.network.is_started() ||
+        this.network.is_awake() ||
+        this.network.is_ready()) {
       this.dataSource.loadNodes();
     } else {
       this.dataSource.clearNodes();

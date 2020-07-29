@@ -20,6 +20,63 @@ class DeviceNotSetException(NetworkException):
 class TryAgainLaterException(NetworkException):
     pass
 
+class NetworkNotReadyException(NetworkException):
+    pass
+
+
+"""
+We are defining the state as a series of booleans, mutually exclusive,
+not for our benefit but for the consumer's. This way they don't have to
+have intimate knowledge of our internal representation for values, nor
+are they obligated to handle strings. They get a set of booleans and do
+whatever they wish with them.
+"""
+class NetworkState:
+
+    def __init__(self):
+        self.is_stopped: bool   = False
+        self.is_failed: bool    = False
+        self.is_resetted: bool  = False
+        self.is_started: bool   = False
+        self.is_awake: bool     = False
+        self.is_ready: bool     = False
+        self.state_str: str     = None
+        
+        
+    def update(self, network: ZWaveNetwork):
+        state = None
+        if network:
+            state = network.state
+        else:
+            self.is_stopped = True
+            return
+
+        if not state or state == ZWaveNetwork.STATE_STOPPED:
+            self.is_stopped = True
+        elif state == ZWaveNetwork.STATE_FAILED:
+            self.is_failed = True
+        elif state == ZWaveNetwork.STATE_RESETTED:
+            self.is_resetted = True
+        elif state == ZWaveNetwork.STATE_STARTED:
+            self.is_started = True
+        elif state == ZWaveNetwork.STATE_AWAKED:
+            self.is_awake = True
+        elif state == ZWaveNetwork.STATE_READY:
+            self.is_ready = True
+        else:
+            self.is_stopped = True # assume default state is stopped.
+
+        self.state_str = network.state_str
+
+    def to_dict(self):
+        return self.__dict__
+
+    @classmethod
+    def obtain(cls, network: ZWaveNetwork):
+        state = cls()
+        state.update(network)
+        return state
+
 
 class NetworkController:
 
@@ -30,6 +87,11 @@ class NetworkController:
         self.network_is_starting = False
         self.network_is_stopping = False
         self.network_lock = threading.Lock()
+
+
+    def get_network_state(self):
+        return NetworkState.obtain(self.network)
+
 
     def _ozw_start(self):
 
@@ -133,7 +195,7 @@ class NetworkController:
     """
     def start(self):
 
-        if self.is_running():
+        if self.is_server_running():
             raise NetworkRunningException("can't start a running network")
 
         if not self.network_device:
@@ -142,11 +204,11 @@ class NetworkController:
                 raise DeviceNotSetException(
                     "can't start network without a device")
 
-        if self.is_starting():
+        if self.is_server_starting():
             # someone else is already doing the same, leave.
             return True
 
-        if self.is_stopping():
+        if self.is_server_stopping():
             raise TryAgainLaterException("network being stopped")
 
         thread = threading.Thread(target=self._ozw_start)
@@ -181,25 +243,58 @@ class NetworkController:
     def get_device(self):
         return self.network_device if self.network_device else ''
 
-    def is_running(self):
+    def is_server_running(self):
         return self.network_is_running
 
-    def is_starting(self):
+    def is_server_starting(self):
         return self.network_is_starting
 
-    def is_stopping(self):
+    def is_server_stopping(self):
         return self.network_is_stopping
 
+    def is_server_started(self):
+        return self.is_server_running() and \
+            not self.is_server_starting() and not self.is_server_stopping()
+
+    def is_ready(self):
+        return self.get_network_state().is_ready
+
+    def is_stopped(self):
+        return self.get_network_state().is_stopped
+
+    def is_started(self):
+        return self.get_network_state().is_started
+
+    def is_awake(self):
+        return self.get_network_state().is_awake
+
     def get_controller(self):
-        if not self.is_running():
+        if not self.is_server_running():
             raise NetworkRunningException("network is not running")
+        if not self.is_started():
+            raise NetworkNotReadyException("network hasn't started yet")
         assert self.network
         return self.network.controller
 
     @property
     def nodes(self):
-        if not self.is_running():
+        if not self.is_server_running():
+            assert(self.is_stopped())
             raise NetworkRunningException("network is not running")
+    
+        if not self.is_ready() and \
+            not self.is_awake() and \
+            not self.is_started():
+            logger.info("nodes > can't obtain nodes yet!")
+            logger.info(" net state: {}".format(self.get_network_state().to_dict()))
+            raise NetworkNotReadyException("network is not ready yet")
+
         assert self.network
         return self.network.nodes
     
+
+    def heal(self):
+        if not self.is_server_running():
+            raise NetworkRunningException("network is not running")
+        if not self.is_started():
+            raise NetworkNotReadyException("network hasn't started yet")

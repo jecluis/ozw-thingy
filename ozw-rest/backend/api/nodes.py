@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from ..state import State, state
-from ..network import NetworkRunningException
+from ..network import NetworkRunningException, NetworkNotReadyException
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ def get_nodes(all: bool = False):
         if all:
             return state.get_nodes_dict()
         nodes = state.get_nodes_simple()
-    except NetworkRunningException:
-        raise HTTPException(status_code=428, detail="network not running")
+    except (NetworkRunningException, NetworkNotReadyException) as e:
+        raise HTTPException(status_code=428, detail=str(e))
 
     logger.info("get nodes: {}".format(nodes))
     return nodes
@@ -25,8 +25,8 @@ def get_nodes(all: bool = False):
 def get_nodes_roles():
     try:
         nodes = state.get_nodes()
-    except NetworkRunningException:
-        raise HTTPException(status_code=428, detail="network not running")
+    except (NetworkRunningException, NetworkNotReadyException) as e:
+        raise HTTPException(status_code=428, detail=str(e))
     
     logger.info("get node roles: nodes = {}".format(nodes))
     roles = {}
@@ -39,8 +39,8 @@ def get_nodes_roles():
 def get_nodes_types():
     try:
         nodes = state.get_nodes()
-    except NetworkRunningException:
-        raise HTTPException(status_code=428, detail="network not running")
+    except (NetworkRunningException, NetworkNotReadyException) as e:
+        raise HTTPException(status_code=428, detail=str(e))
     logger.info("get node types: nodes = {}".format(nodes))
     types = {}
     for n in nodes.values():
@@ -66,8 +66,8 @@ def get_node_values(node_id: int, scope: str = None):
 
     try:
         nodes = state.get_nodes()
-    except NetworkRunningException:
-        raise HTTPException(status_code=428, detail="network not running")
+    except (NetworkRunningException, NetworkNotReadyException) as e:
+        raise HTTPException(status_code=428, detail=str(e))
     if node_id not in nodes:
         raise HTTPException(status_code=404, detail="node not found")
 
