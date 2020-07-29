@@ -10,7 +10,6 @@ router = APIRouter()
 
 @router.get('/')
 def get_nodes(all: bool = False):
-    #nodes = state.get_nodes_dict()
     try:
         if all:
             return state.get_nodes_dict()
