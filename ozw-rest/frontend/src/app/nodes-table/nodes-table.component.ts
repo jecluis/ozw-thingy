@@ -45,14 +45,14 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
     this.load_nodes();
 
     this.data_update_subscription = interval(20000).subscribe(
-      (val) => { this.load_nodes(); }
+      (val) => { this.load_nodes_fenced(); }
     );
 
     this.network.get_state_observer()
       .subscribe( state => {
         if (state !== this.current_network_state) {
           this.current_network_state = state;
-          this.load_nodes();
+          this.load_nodes_fenced();
         }
       });
   }
@@ -71,10 +71,16 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   }
 
   private load_nodes() {
+    this.dataSource.loadNodes();
+  }
+
+  // fencing to prevent hammering the server, but we still want to
+  // allow the initial state to be attempted to be loaded regardless.
+  private load_nodes_fenced() {
     if (this.network.is_started() ||
         this.network.is_awake() ||
         this.network.is_ready()) {
-      this.dataSource.loadNodes();
+      this.load_nodes();
     } else {
       this.dataSource.clearNodes();
     }
