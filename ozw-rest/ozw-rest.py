@@ -20,8 +20,9 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api import nodes
+from backend.api import nodes as api_nodes
 from backend.api import network as api_network
+from backend.api import controller as api_controller
 
 
 app = FastAPI()
@@ -45,13 +46,18 @@ logger = logging.getLogger(__name__)
 
 
 app.include_router(
-    nodes.router,
+    api_nodes.router,
     prefix='/api/nodes'
 )
 
 app.include_router(
     api_network.router,
     prefix='/api/network'
+)
+
+app.include_router(
+    api_controller.router,
+    prefix='/api/controller'
 )
 
 @app.get('/api/')
