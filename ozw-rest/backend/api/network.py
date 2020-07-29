@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException
-from ..controller import Controller, controller
+from ..state import State, state
 from ..network import NetworkController, NetworkRunningException, \
                       DeviceNotSetException, TryAgainLaterException
                       
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-network_ctrl: NetworkController = controller.get_network_controller()
+network_ctrl: NetworkController = state.get_network_controller()
 
 @router.get('/status')
 def get_network_status():

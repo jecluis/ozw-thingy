@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException
-from ..controller import Controller, controller
+from ..state import State, state
 from ..network import NetworkRunningException
 
 logger = logging.getLogger(__name__)
@@ -10,11 +10,11 @@ router = APIRouter()
 
 @router.get('/')
 def get_nodes(all: bool = False):
-    #nodes = controller.get_nodes_dict()
+    #nodes = state.get_nodes_dict()
     try:
         if all:
-            return controller.get_nodes_dict()
-        nodes = controller.get_nodes_simple()
+            return state.get_nodes_dict()
+        nodes = state.get_nodes_simple()
     except NetworkRunningException:
         raise HTTPException(status_code=428, detail="network not running")
 
@@ -24,7 +24,7 @@ def get_nodes(all: bool = False):
 @router.get('/roles')
 def get_nodes_roles():
     try:
-        nodes = controller.get_nodes()
+        nodes = state.get_nodes()
     except NetworkRunningException:
         raise HTTPException(status_code=428, detail="network not running")
     
@@ -38,7 +38,7 @@ def get_nodes_roles():
 @router.get('/types')
 def get_nodes_types():
     try:
-        nodes = controller.get_nodes()
+        nodes = state.get_nodes()
     except NetworkRunningException:
         raise HTTPException(status_code=428, detail="network not running")
     logger.info("get node types: nodes = {}".format(nodes))
@@ -65,7 +65,7 @@ def get_node_values(node_id: int, scope: str = None):
     # tried. Thus, we're grabbing the values outselves.
 
     try:
-        nodes = controller.get_nodes()
+        nodes = state.get_nodes()
     except NetworkRunningException:
         raise HTTPException(status_code=428, detail="network not running")
     if node_id not in nodes:

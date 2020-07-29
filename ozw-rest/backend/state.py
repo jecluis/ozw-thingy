@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 
-class ControllerExit(Exception):
+class StateException(Exception):
     pass
 
 
-class Controller(EventHandler):
+class State(EventHandler):
 
     def __init__(self):
         super().__init__()
@@ -33,7 +33,8 @@ class Controller(EventHandler):
 
     def handle_signal(signum, frame):
         if signum == signal.SIGINT:
-            raise ControllerExit()
+            raise StateException
+    ()
 
     def _handle_node(self, node_id, node):
         logger.debug(f"handle node {node_id}")
@@ -116,4 +117,4 @@ class Controller(EventHandler):
 # why? because we haven't, so far, figured out how to do fastapi without
 # having pretty much all the important state as global. :(
 # 
-controller = Controller()
+state = State()

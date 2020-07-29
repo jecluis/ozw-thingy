@@ -8,7 +8,6 @@ from typing import Dict, List
 from abc import ABC, abstractmethod
 
 # requirerments for openzwave integration
-from openzwave.controller import ZWaveController
 from openzwave.network import ZWaveNetwork
 from openzwave.option import ZWaveOption
 from openzwave.node import ZWaveNode
@@ -21,7 +20,6 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.controller import Controller, controller
 from backend.api import nodes
 from backend.api import network as api_network
 
