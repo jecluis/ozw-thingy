@@ -69,7 +69,13 @@ class Controller(EventHandler):
         }
         ozw_controller = self.networkctrl.get_controller()
         if node.node_id == ozw_controller.node_id:
+            ctrl_caps = {
+                "is_primary": ozw_controller.is_primary_controller,
+                "is_bridge": ozw_controller.is_bridge_controller,
+                "is_static_update": ozw_controller.is_static_update_controller
+            }
             caps["is_controller"] = True
+            caps["controller"] = ctrl_caps
 
         return caps
 
