@@ -311,5 +311,8 @@ class NetworkController:
     def heal(self):
         if not self.is_server_running():
             raise NetworkRunningException("network is not running")
-        if not self.is_started():
+        if not (self.is_ready() or self.is_awake()):
             raise NetworkNotReadyException("network hasn't started yet")
+        assert self.network
+        self.network.heal(upNodeRoute=False)
+        
