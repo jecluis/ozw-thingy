@@ -29,6 +29,9 @@ class EventHandler(ABC):
         dispatcher.connect(self.handle_node_event,
                            ZWaveNetwork.SIGNAL_NODE_NEW)
 
+        dispatcher.connect(self.handle_controller_cmd,
+                           ZWaveNetwork.SIGNAL_CONTROLLER_COMMAND)
+
 
     def handle_value(self, signal, node, value):
 
@@ -49,6 +52,11 @@ class EventHandler(ABC):
         node: ZWaveNode = kwargs['node'] 
         self._handle_node(node.node_id, node)
         
+
+    def handle_controller_cmd(self, signal, **kwargs):
+        logger.info("controller cmd > signal = {}, kwargs = {}".format(
+            signal, kwargs
+        ))
 
     @abstractmethod
     def _handle_value(self, node, value):
