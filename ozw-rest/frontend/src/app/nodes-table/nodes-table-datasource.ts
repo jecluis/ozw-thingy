@@ -160,6 +160,11 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
     this._getNodes();
   }
 
+  clearNodes() {
+    this.nodes_data = [];
+    this.nodesSubject.next([]);
+  }
+
 }
 
 /** Simple sort comparator for example ID/Name columns (for client-side sorting). */

@@ -34,6 +34,7 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   @Output() selected_node = new EventEmitter<NodesTableItem>();
 
   private data_update_subscription: Subscription;
+  current_network_state: string = 'unknown';
 
   constructor(
     private http: HttpClient,
@@ -46,6 +47,14 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
     this.data_update_subscription = interval(20000).subscribe(
       (val) => { this.load_nodes(); }
     );
+
+    this.network.get_state_observer()
+      .subscribe( state => {
+        if (state !== this.current_network_state) {
+          this.current_network_state = state;
+          this.load_nodes();
+        }
+      });
   }
 
   ngAfterViewInit() {
@@ -62,8 +71,10 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   }
 
   private load_nodes() {
-    if (this.network.is_running()) {
+    if (this.network.is_started()) {
       this.dataSource.loadNodes();
+    } else {
+      this.dataSource.clearNodes();
     }
   }
 }

@@ -100,6 +100,12 @@ export class NetworkService {
     return (!!this.status && this.status.is_running);
   }
 
+  is_started() {
+    let has_status = !!this.status;
+    return has_status && !this.status.is_starting &&
+           !this.status.is_stopping && this.is_running();
+  }
+
   start_network() {
     return this.http.put("/api/network/start", true);
   }
