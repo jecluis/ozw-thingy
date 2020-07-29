@@ -17,12 +17,20 @@ export interface NodesTableRawItem {
   capabilities: {};
 }
 
+export interface NodeControllerCapsRawItem {
+  is_primary: boolean;
+  is_bridge: boolean;
+  is_static_updater: boolean;
+}
+
 export interface NodesTableItem {
   id: number;
   product: string;
   type: string;
   state: string;
   capabilities: {};
+  is_controller: boolean;
+  controller_caps?: {};
 }
 
 const enum State {
@@ -121,6 +129,8 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
       let type = item.node_type;
       let state = item.state;
       let product = item.product_name;
+      let is_controller = item.capabilities['is_controller'];
+      let controller_caps = {};
 
       if (type.length == 0) {
         type = "unknown";
@@ -129,12 +139,19 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
         product = "unknown";
       }
 
-      translated_items.push(
-        { 
-          id: item.node_id, product: product, type: type,
-          state: state, capabilities: item.capabilities
-        }
-      );
+      let translated_item: NodesTableItem = { 
+        id: item.node_id, product: product, type: type,
+        state: state, capabilities: item.capabilities,
+        is_controller: is_controller
+      };
+      if (translated_item.is_controller) {
+        console.log("item is controller: ", translated_item);
+        let ctrl_caps: NodeControllerCapsRawItem =
+          item.capabilities['controller'];
+        console.log("controller caps: ", ctrl_caps);
+        translated_item.controller_caps = ctrl_caps;        
+      }
+      translated_items.push(translated_item);
     });
 
     return translated_items;

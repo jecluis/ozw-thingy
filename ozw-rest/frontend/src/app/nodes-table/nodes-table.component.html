@@ -54,34 +54,22 @@
             matTooltip="sleeping">visibility_off</mat-icon>
         </ng-container>
       </ng-container>
-      <!--
-      <ng-container *ngIf="row.state === 'ready'">
-        <mat-icon
-          style="color: green"
-          matTooltip="ready">check</mat-icon>
-      </ng-container>
-      <ng-container *ngIf="row.state === 'awake'">
-        <mat-icon
-          style="color: indigo"
-          matTooltip="awake">visibility</mat-icon>
-      </ng-container>
-      <ng-container *ngIf="row.state === 'failed'">
-        <mat-icon
-          style="color: red"
-          matTooltip="failed">error_outline</mat-icon>
-      </ng-container>
-      -->
     </td>
   </ng-container>
 
   <ng-container matColumnDef="capabilities">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Capabilities</th>
     <td mat-cell *matCellDef="let row">
+      <mat-icon
+        *ngIf="row.is_controller"
+        matTooltip="controller">sports_esports</mat-icon>
+      <mat-icon
+        *ngIf="row.is_controller && !!row.controller_caps && row.controller_caps.is_primary"
+        matTooltip="primary controller">star_rate</mat-icon>
+      <mat-icon
+        *ngIf="row.is_controller && !!row.controller_caps && row.controller_caps.is_bridge"
+        matTooltip="bridge controller">link</mat-icon>
       <ng-container *ngFor="let cap of row.capabilities | keyvalue">
-        <ng-container
-          *ngIf="cap.key === 'is_controller' && cap.value === true">
-          <mat-icon matTooltip="controller">sports_esports</mat-icon>
-        </ng-container>
         <ng-container
           *ngIf="cap.key === 'is_routing' && cap.value === true">
           <mat-icon matTooltip="routing">sync_alt</mat-icon>
