@@ -159,9 +159,8 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
 
   _getNodes() {
 
-    let url='';
     let nodes =
-      this.http.get<NodesTableRawItem[]>(url+'/api/nodes')
+      this.http.get<NodesTableRawItem[]>('/api/nodes')
         .pipe(
           catchError( () => merge([]) ),
           finalize( () => console.log("got nodes"))
