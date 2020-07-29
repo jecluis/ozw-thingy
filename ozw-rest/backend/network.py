@@ -268,10 +268,13 @@ class NetworkController:
     def is_awake(self):
         return self.get_network_state().is_awake
 
+    def is_available(self):
+        return self.is_ready() or self.is_awake() or self.is_started()
+
     def get_controller(self):
         if not self.is_server_running():
             raise NetworkRunningException("network is not running")
-        if not self.is_started():
+        if not self.is_available():
             raise NetworkNotReadyException("network hasn't started yet")
         assert self.network
         return self.network.controller
@@ -279,18 +282,30 @@ class NetworkController:
     @property
     def nodes(self):
         if not self.is_server_running():
+            logger.info("nodes > server not running!")
+            server_state = {
+                'stopping': self.is_server_stopping(),
+                'running': self.is_server_running(),
+                'started': self.is_server_started(),
+                'starting': self.is_server_starting()
+            }
+            state = {
+                'server': server_state,
+                'network': self.get_network_state().to_dict()
+            }            
+            logger.info(" net state: {}".format(state))
             assert(self.is_stopped())
             raise NetworkRunningException("network is not running")
     
-        if not self.is_ready() and \
-            not self.is_awake() and \
-            not self.is_started():
+        if self.is_available():
+            assert self.network
+            assert self.is_server_running()
+            return self.network.nodes
+        else:
             logger.info("nodes > can't obtain nodes yet!")
-            logger.info(" net state: {}".format(self.get_network_state().to_dict()))
+            logger.info(" net state: {}".format(
+                self.get_network_state().to_dict()))
             raise NetworkNotReadyException("network is not ready yet")
-
-        assert self.network
-        return self.network.nodes
     
 
     def heal(self):

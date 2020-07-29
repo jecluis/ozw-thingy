@@ -41,9 +41,10 @@ interface FullStatusItem {
 }
 
 export interface SimpleStatusItem {
-  state: string;
+  server_state: string;
+  network_state: string;
   device: string;
-  network_state?: string;
+  network_state_str?: string;
 }
 
 
@@ -52,7 +53,9 @@ export interface SimpleStatusItem {
 })
 export class NetworkService {
 
-  state: ControllerState = ControllerState.UNKNOWN;
+  server_state_str: ControllerState = ControllerState.UNKNOWN;
+  network_state_str: ControllerState = ControllerState.UNKNOWN;
+
   status: FullStatusItem;
   server_state: ServerStateItem;
   network_state: NetworkStateItem;
@@ -80,16 +83,18 @@ export class NetworkService {
       .subscribe( status => {
         console.log("got network status: ", status);
         this.setState(status);
-        this.state_subject_observer.next(this.get_state());
+        this.state_subject_observer.next(this.get_network_state());
         this.simplestatus_subject_observer.next({
-          state: this.get_state(),
+          server_state: this.get_server_state(),
+          network_state: this.get_network_state(),
           device: status.server.device,
-          network_state: status.network.network_state
+          network_state_str: status.network.state_str
         });
       },
       err => {
         console.log("unable to obtain network status")
-        this.state = ControllerState.UNKNOWN;
+        this.server_state_str = ControllerState.UNKNOWN;
+        this.network_state_str = ControllerState.UNKNOWN;
       });
   }
 
@@ -97,33 +102,38 @@ export class NetworkService {
     let server_state = status.server;
     let network_state = status.network;
     
-    this.state = ControllerState.STOPPED;
+    this.server_state_str = ControllerState.STOPPED;
     if (server_state.is_starting) {
-      this.state = ControllerState.STARTING;
+      this.server_state_str = ControllerState.STARTING;
     } else if (server_state.is_stopping) {
-      this.state = ControllerState.STOPPING;
+      this.server_state_str = ControllerState.STOPPING;
     } else if (server_state.is_running) {
-      this.state = ControllerState.RUNNING;
+      this.server_state_str = ControllerState.RUNNING;
     }
 
+    this.network_state_str = ControllerState.STOPPED;
     if (network_state.is_awake) {
-      this.state = ControllerState.AWAKE;
+      this.network_state_str = ControllerState.AWAKE;
     } else if (network_state.is_failed) {
-      this.state = ControllerState.FAILED;
+      this.network_state_str = ControllerState.FAILED;
     } else if (network_state.is_ready) {
-      this.state = ControllerState.READY;
+      this.network_state_str = ControllerState.READY;
     } else if (network_state.is_resetted) {
-      this.state = ControllerState.RESETTED;
+      this.network_state_str = ControllerState.RESETTED;
     } else if (network_state.is_started) {
-      this.state = ControllerState.STARTED;
+      this.network_state_str = ControllerState.STARTED;
     }
     this.status = status;
     this.server_state = server_state;
     this.network_state = network_state;
   }
 
-  get_state(): ControllerState {
-    return this.state
+  get_server_state(): ControllerState {
+    return this.server_state_str;
+  }
+
+  get_network_state(): ControllerState {
+    return this.network_state_str;
   }
 
   refresh_state() {
