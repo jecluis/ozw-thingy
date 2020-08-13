@@ -19,6 +19,7 @@
     "gyp": "^0.5.0",
     "node-gyp": "^7.0.0",
     "openzwave-shared": "^1.7.1",
+    "rxjs": "^6.6.2",
     "tslog": "^2.7.0"
   }
 }

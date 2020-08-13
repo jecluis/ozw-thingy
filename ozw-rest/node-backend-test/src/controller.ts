@@ -2,6 +2,7 @@ import { Logger } from 'tslog';
 import ZWave, {
     ControllerState, ControllerError
 } from 'openzwave-shared';
+import { BehaviorSubject } from 'rxjs';
 
 
 const logger: Logger = new Logger({name: 'controller'});
@@ -28,9 +29,25 @@ export enum ControllerCommandEnum {
 }
 
 
+export interface ControllerStateItem {
+
+    is_driver_connected: boolean,
+    is_driver_ready: boolean,
+    is_driver_failed: boolean,
+    is_scan_complete: boolean,
+}
+
 export class Controller {
 
-    scan_complete: boolean = false;
+    driverState: ControllerStateItem = {
+        is_driver_connected: false,
+        is_driver_ready: false,
+        is_driver_failed: false,
+        is_scan_complete: false
+    }
+
+    driverStateObserver: BehaviorSubject<ControllerStateItem> =
+        new BehaviorSubject<ControllerStateItem>(this.driverState);
 
     constructor(private zwave: ZWave) {
 
@@ -45,14 +62,18 @@ export class Controller {
 
     private _handleConnected(version: string) {
         logger.info(`[driver: connected] version: ${version}`);
+        this.driverState.is_driver_connected = true;
     }
 
     private _handleDriverReady(homeId: number) {
         logger.info(`[driver: ready] home id: ${homeId}`);
+        this.driverState.is_driver_ready = true;
     }
 
     private _handleDriverFailed() {
         logger.info("[driver: failed] ¯\_(ツ)_/¯");
+        this.driverState.is_driver_failed = true;
+        this.driverState.is_driver_ready = false;
     }
 
     private _handleDBReady() {
@@ -76,6 +97,20 @@ export class Controller {
 
     private _handleScanComplete() {
         logger.info("[ctrl] scan complete");
-        this.scan_complete = true;
+        this.driverState.is_scan_complete = true;
+
+        // this.zwave.healNetwork();
+    }
+
+    _updateStateObserver() {
+        this.driverStateObserver.next(this.driverState);
+    }
+
+    isScanComplete(): boolean {
+        return this.driverState.is_scan_complete;
+    }
+
+    getStateObserver(): BehaviorSubject<ControllerStateItem> {
+        return this.driverStateObserver;
     }
 }

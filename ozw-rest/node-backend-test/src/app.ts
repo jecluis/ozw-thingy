@@ -5,8 +5,29 @@ import { NodeInfo, Value, ControllerState,
  } from 'openzwave-shared';
 import { NodesController, NodeValueDatasource } from './nodes';
 import { Controller } from './controller';
+import fs from 'fs';
 
 
+interface BackendConfig {
+    server_host: string,
+    server_port: number,
+    zwave_device: string,
+}
+
+let config: BackendConfig = {
+    server_port: 31337,
+    server_host: "0.0.0.0",
+    zwave_device: "/dev/ttyACM0",
+};
+
+if (fs.existsSync('./config.json')) {
+    let raw: string = fs.readFileSync('./config.json', 'utf-8');
+    let loaded_config: {} = JSON.parse(raw);
+    console.log("loaded config:", config);
+    config = {...config, ...loaded_config};
+}
+
+console.log("config: ", config);
 
 const app = express();
 const port = 31337;
@@ -15,7 +36,8 @@ const zwave = new ZWave({
     ConsoleOutput: false,
     ConfigPath: './zwave.db/',
     LogFileName: './ozw.log',
-    Logging: true
+    Logging: true,
+    NotifyTransactions: true,
 });
 
 
@@ -29,7 +51,7 @@ zwave.connect('/dev/ttyACM0');
 
 
 function refreshNodeInfo() {
-    if (!controller.scan_complete) {
+    if (!controller.isScanComplete()) {
         return false;
     }
     let nodes = Object.values(node_controller.nodes);
@@ -71,14 +93,12 @@ app.get('/nodes/:nodeId/values', (req, res) => {
     res.send(values);
 });
 
-app.listen(port, err => {
+app.listen(config.server_port, config.server_host, err => {
     if (err) {
         return console.error(err);
     }
     return console.log('server is listening on', port);
 });
-
-
 
 
 // stuff we haven't figured out yet where to leave, or when to drop.

@@ -1,6 +1,7 @@
 import ZWave from 'openzwave-shared';
 import { Value, ValueId, NodeInfo, Notification } from 'openzwave-shared';
 import { Logger } from 'tslog';
+import { BehaviorSubject } from 'rxjs';
 
 
 
@@ -80,7 +81,9 @@ export class NodeValueDatasource {
     }
 }
 
+
 export enum NodeItemState {
+    Nop = 2,
     NodeAwake = 3,
     NodeSleep = 4,
     NodeDead = 5,
@@ -106,6 +109,9 @@ export interface NodeItem {
 export class NodesController {
 
     nodes: {[id: number]: NodeItem} = {};
+    stateObserver: BehaviorSubject<NodeItemState> =
+        new BehaviorSubject<NodeItemState>(undefined);
+
 
     constructor(private zwave: ZWave) {
         this.zwave.on("node added", this._handleNodeAdded.bind(this));
@@ -200,6 +206,51 @@ export class NodesController {
         }
         if (nodeId in this.nodes) {
             this.nodes[nodeId].state = node_state;
+            this.updateState();
         }
+    }
+
+    private updateState() {
+        let current_state = NodeItemState.NodeDead;
+        Object.values(this.nodes).forEach( (node) => {
+            if (node.id == this.zwave.getControllerNodeId()) {
+                return; // skip controller.
+            }
+            if (current_state == node.state) {
+                return;
+            } else if (!current_state) {
+                current_state = node.state;
+            } else if (node.state == NodeItemState.NodeDead) {
+                return; // we have something else that is not dead.
+            } else if (node.state == NodeItemState.NodeAlive) {
+                // we got a live one. network is alive.
+                current_state = NodeItemState.NodeAlive;
+            } else {
+                current_state = node.state;
+            }
+        });
+        nctrlog.info("updating node state to "+current_state.toString());
+        this.stateObserver.next(current_state);
+    }
+
+    getStateObservable(): BehaviorSubject<NodeItemState> {
+        return this.stateObserver;
+    }
+
+    refreshNodeInfo(nodeId?: number): void {
+        if (nodeId) {
+            if (!(nodeId in this.nodes)) {
+                nctrlog.error(`unknown node id ${nodeId}`);
+                return;
+            }
+            nctrlog.info(`refreshing info for node ${nodeId}`);
+            this.zwave.refreshNodeInfo(nodeId);
+        }
+
+        nctrlog.info("refreshing information for all nodes");
+        Object.values(this.nodes).forEach( (node) => {
+            nctrlog.info(`refreshing info for node ${node.id}`);
+            this.zwave.refreshNodeInfo(node.id);
+        });
     }
 }
