@@ -1,7 +1,12 @@
 import ZWave from 'openzwave-shared';
-import { Value, ValueId, NodeInfo, Notification } from 'openzwave-shared';
+import { ValueId, Notification } from 'openzwave-shared';
 import { Logger } from 'tslog';
 import { BehaviorSubject } from 'rxjs';
+
+import {
+    NodeItem, NodeItemCaps, NodeItemState, NodeInfoItem
+} from './types/nodes';
+import { ValueItem } from './types/values';
 
 
 
@@ -11,7 +16,7 @@ const vdatalog = new Logger({name: 'values-data'});
 
 export class NodeValueDatasource {
 
-    node_values: {[id: number]: {[id: string]: Value}} = {}
+    node_values: {[id: number]: {[id: string]: ValueItem}} = {}
 
     constructor(private zwave: ZWave) {
 
@@ -27,7 +32,9 @@ export class NodeValueDatasource {
     }
 
 
-    private _handleValueAdded(nodeId: number, comClass: number, value: Value) {
+    private _handleValueAdded(
+            nodeId: number, comClass: number, 
+            value: ValueItem) {
         vdatalog.info(`[value: added] id: ${nodeId}, value: ${value.value_id}`);
 
         if (!(nodeId in this.node_values)) {
@@ -37,14 +44,14 @@ export class NodeValueDatasource {
     }
 
     private _handleValueChanged(
-            nodeId: number, comClass: number, value: Value) {
+            nodeId: number, comClass: number, value: ValueItem) {
         vdatalog.info(`[value: changed] id: ${nodeId}, `+
                       `value: ${value.value_id}`);
         this.node_values[nodeId][value.value_id] = value;
     }
 
     private _handleValueRefreshed(
-            nodeId: number, comClass: number, value: Value) {
+            nodeId: number, comClass: number, value: ValueItem) {
         vdatalog.info(`[value: refresh] id: ${nodeId}, `+
                       `value: ${value.value_id}`);
         this.node_values[nodeId][value.value_id] = value;
@@ -71,7 +78,7 @@ export class NodeValueDatasource {
         }
     }
 
-    getValues(nodeId: number): Value[] {
+    getValues(nodeId: number): ValueItem[] {
         if (!(nodeId in this.node_values)) {
             return [];
         }
@@ -82,35 +89,9 @@ export class NodeValueDatasource {
 }
 
 
-export enum NodeItemState {
-    Nop = 2,
-    NodeAwake = 3,
-    NodeSleep = 4,
-    NodeDead = 5,
-    NodeAlive = 6
-}
-
-export interface NodeItemCaps {
-    is_listening: boolean;
-    is_routing: boolean;
-    is_beaming: boolean;
-    is_controller: boolean;
-    is_primary_controller: boolean;
-}
-
-export interface NodeItem {
-    id: number;
-    info: NodeInfo;
-    state: NodeItemState;
-    ready: boolean;
-    caps: NodeItemCaps;
-}
-
-export class NodesController {
+export class NodesService {
 
     nodes: {[id: number]: NodeItem} = {};
-    stateObserver: BehaviorSubject<NodeItemState> =
-        new BehaviorSubject<NodeItemState>(undefined);
 
 
     constructor(private zwave: ZWave) {
@@ -121,6 +102,12 @@ export class NodesController {
         this.zwave.on("node naming", this._handleNodeNaming.bind(this));
         this.zwave.on("node available", this._handleNodeAvailable.bind(this));
         this.zwave.on("notification", this._handleNotification.bind(this));
+
+        // monitor value add, to grab node classes.
+        this.zwave.on("value added", this._handleValueEvent.bind(this));
+        // monitor value changes just so we can update last contact.
+        this.zwave.on("value changed", this._handleValueEvent.bind(this));
+        this.zwave.on("value refreshed", this._handleValueEvent.bind(this));
     }
 
     private _handleNodeAdded(nodeId: number) {
@@ -137,6 +124,10 @@ export class NodesController {
                 is_beaming: false,
                 is_controller: false,
                 is_primary_controller: false
+            },
+            class: {
+                is_meter: false,
+                is_switch: false
             }
         };
     }
@@ -152,7 +143,7 @@ export class NodesController {
         nctrlog.info(`[node: reset] id: ${nodeId} ¯\_(ツ)_/¯`);
     }
 
-    private _handleNodeReady(nodeId: number, nodeInfo: NodeInfo) {
+    private _handleNodeReady(nodeId: number, nodeInfo: NodeInfoItem) {
         nctrlog.info(`[node: ready] id: ${nodeId}, info: ${nodeInfo.product}`);
         if (!(nodeId in this.nodes)) {
             return;
@@ -172,16 +163,19 @@ export class NodesController {
             is_primary_controller: is_primary
         }
         this.nodes[nodeId].caps = caps;
+        this.nodes[nodeId].state = NodeItemState.NodeAlive;
+        this._updateNodeContact(nodeId);
     }
 
-    private _handleNodeNaming(nodeId: number, nodeInfo: NodeInfo) {
+    private _handleNodeNaming(nodeId: number, nodeInfo: NodeInfoItem) {
         nctrlog.info(`[node: naming] id: ${nodeId}, info: ${nodeInfo.product}`);
         if (nodeId in this.nodes) {
             this.nodes[nodeId].info = nodeInfo;
         }
+        this._updateNodeContact(nodeId);
     }
 
-    private _handleNodeAvailable(nodeId: number, nodeInfo: NodeInfo) {
+    private _handleNodeAvailable(nodeId: number, nodeInfo: NodeInfoItem) {
         nctrlog.info(`[node: available] id: ${nodeId}`);
     }
 
@@ -206,35 +200,35 @@ export class NodesController {
         }
         if (nodeId in this.nodes) {
             this.nodes[nodeId].state = node_state;
-            this.updateState();
+            this._updateNodeContact(nodeId);
         }
     }
 
-    private updateState() {
-        let current_state = NodeItemState.NodeDead;
-        Object.values(this.nodes).forEach( (node) => {
-            if (node.id == this.zwave.getControllerNodeId()) {
-                return; // skip controller.
-            }
-            if (current_state == node.state) {
-                return;
-            } else if (!current_state) {
-                current_state = node.state;
-            } else if (node.state == NodeItemState.NodeDead) {
-                return; // we have something else that is not dead.
-            } else if (node.state == NodeItemState.NodeAlive) {
-                // we got a live one. network is alive.
-                current_state = NodeItemState.NodeAlive;
-            } else {
-                current_state = node.state;
-            }
-        });
-        nctrlog.info("updating node state to "+current_state.toString());
-        this.stateObserver.next(current_state);
+    private _handleValueEvent(
+            nodeId: number, comClass: number, value: ZWave.Value) {
+
+        if (!(nodeId in this.nodes)) {
+            return;
+        }
+
+        switch (comClass) {
+            case 0x25: // COMMAND_CLASS_SWITCH_BINARY
+            case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
+                this.nodes[nodeId].class.is_switch = true;
+                break;
+            case 0x32: // COMMAND_CLASS_METER
+                this.nodes[nodeId].class.is_meter = true;
+                break;
+        }
+
+        this._updateNodeContact(nodeId);
     }
 
-    getStateObservable(): BehaviorSubject<NodeItemState> {
-        return this.stateObserver;
+    private _updateNodeContact(nodeId: number) {
+        if (!(nodeId in this.nodes)) {
+            return;
+        }
+        this.nodes[nodeId].last_seen = new Date().toISOString();
     }
 
     refreshNodeInfo(nodeId?: number): void {
@@ -253,4 +247,5 @@ export class NodesController {
             this.zwave.refreshNodeInfo(node.id);
         });
     }
+
 }

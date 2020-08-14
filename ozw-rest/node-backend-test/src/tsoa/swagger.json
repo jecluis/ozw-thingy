@@ -1,0 +1,614 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"ControllerStateItem": {
+				"properties": {
+					"is_driver_connected": {
+						"type": "boolean"
+					},
+					"is_driver_ready": {
+						"type": "boolean"
+					},
+					"is_driver_failed": {
+						"type": "boolean"
+					},
+					"is_scan_complete": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"is_driver_connected",
+					"is_driver_ready",
+					"is_driver_failed",
+					"is_scan_complete"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"NetworkStateItem": {
+				"properties": {
+					"is_stopped": {
+						"type": "boolean"
+					},
+					"is_started": {
+						"type": "boolean"
+					},
+					"is_failed": {
+						"type": "boolean"
+					},
+					"is_resetted": {
+						"type": "boolean"
+					},
+					"is_ready": {
+						"type": "boolean"
+					},
+					"is_awake": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"is_stopped",
+					"is_started",
+					"is_failed",
+					"is_resetted",
+					"is_ready",
+					"is_awake"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"NetworkStatus": {
+				"properties": {
+					"driver": {
+						"$ref": "#/components/schemas/ControllerStateItem"
+					},
+					"network": {
+						"$ref": "#/components/schemas/NetworkStateItem"
+					}
+				},
+				"required": [
+					"driver",
+					"network"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"NodeInfoItem": {
+				"properties": {
+					"manufacturer": {
+						"type": "string"
+					},
+					"manufacturerid": {
+						"type": "string"
+					},
+					"product": {
+						"type": "string"
+					},
+					"producttype": {
+						"type": "string"
+					},
+					"productid": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"loc": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"manufacturer",
+					"manufacturerid",
+					"product",
+					"producttype",
+					"productid",
+					"type",
+					"name",
+					"loc"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"NodeItemState": {
+				"enum": [
+					2,
+					3,
+					4,
+					5,
+					6
+				],
+				"type": "number"
+			},
+			"NodeItemCaps": {
+				"properties": {
+					"is_listening": {
+						"type": "boolean"
+					},
+					"is_routing": {
+						"type": "boolean"
+					},
+					"is_beaming": {
+						"type": "boolean"
+					},
+					"is_controller": {
+						"type": "boolean"
+					},
+					"is_primary_controller": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"is_listening",
+					"is_routing",
+					"is_beaming",
+					"is_controller",
+					"is_primary_controller"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"NodeItem": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"info": {
+						"$ref": "#/components/schemas/NodeInfoItem"
+					},
+					"state": {
+						"$ref": "#/components/schemas/NodeItemState"
+					},
+					"ready": {
+						"type": "boolean"
+					},
+					"caps": {
+						"$ref": "#/components/schemas/NodeItemCaps"
+					},
+					"last_seen": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"info",
+					"state",
+					"ready",
+					"caps"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ValueType": {
+				"anyOf": [
+					{
+						"type": "string",
+						"enum": [
+							"bool"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"byte"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"decimal"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"int"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"list"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"schedule"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"short"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"string"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"button"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"raw"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"max"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"bitset"
+						],
+						"nullable": false
+					}
+				]
+			},
+			"ValueGenre": {
+				"anyOf": [
+					{
+						"type": "string",
+						"enum": [
+							"basic"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"user"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"system"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"config"
+						],
+						"nullable": false
+					},
+					{
+						"type": "string",
+						"enum": [
+							"count"
+						],
+						"nullable": false
+					}
+				]
+			},
+			"ValueItem": {
+				"properties": {
+					"value_id": {
+						"type": "string"
+					},
+					"node_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"class_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"type": {
+						"$ref": "#/components/schemas/ValueType"
+					},
+					"genre": {
+						"$ref": "#/components/schemas/ValueGenre"
+					},
+					"instance": {
+						"type": "number",
+						"format": "double"
+					},
+					"index": {
+						"type": "number",
+						"format": "double"
+					},
+					"label": {
+						"type": "string"
+					},
+					"units": {
+						"type": "string"
+					},
+					"help": {
+						"type": "string"
+					},
+					"read_only": {
+						"type": "boolean"
+					},
+					"write_only": {
+						"type": "boolean"
+					},
+					"min": {
+						"type": "number",
+						"format": "double"
+					},
+					"max": {
+						"type": "number",
+						"format": "double"
+					},
+					"is_polled": {
+						"type": "boolean"
+					},
+					"values": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"value": {
+						"anyOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				},
+				"required": [
+					"value_id",
+					"node_id",
+					"class_id",
+					"type",
+					"genre",
+					"instance",
+					"index",
+					"label",
+					"units",
+					"help",
+					"read_only",
+					"write_only",
+					"min",
+					"max",
+					"is_polled",
+					"value"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "backend-test",
+		"version": "1.0.0",
+		"license": {
+			"name": "EUPL-1.2"
+		},
+		"contact": {
+			"name": "Joao Eduardo Luis"
+		}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/api/network/status": {
+			"get": {
+				"operationId": "GetNodes",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NetworkStatus"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/network/start": {
+			"put": {
+				"operationId": "StartNetwork",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/network/stop": {
+			"put": {
+				"operationId": "StopNetwork",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/nodes": {
+			"get": {
+				"operationId": "GetNodes",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/NodeItem"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/nodes/{nodeId}": {
+			"get": {
+				"operationId": "GetNode",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeItem"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "nodeId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/nodes/{nodeId}/values": {
+			"get": {
+				"operationId": "GetNodeValues",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/ValueItem"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "nodeId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/nodes/{nodeId}/scope/{scope}": {
+			"get": {
+				"operationId": "GetNodeValuesByScope",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/ValueItem"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "nodeId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "scope",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

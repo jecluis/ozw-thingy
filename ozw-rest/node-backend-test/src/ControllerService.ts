@@ -3,6 +3,7 @@ import ZWave, {
     ControllerState, ControllerError
 } from 'openzwave-shared';
 import { BehaviorSubject } from 'rxjs';
+import { textSpanIsEmpty } from 'typescript';
 
 
 const logger: Logger = new Logger({name: 'controller'});
@@ -37,19 +38,29 @@ export interface ControllerStateItem {
     is_scan_complete: boolean,
 }
 
-export class Controller {
+export class ControllerService {
 
-    driverState: ControllerStateItem = {
-        is_driver_connected: false,
-        is_driver_ready: false,
-        is_driver_failed: false,
-        is_scan_complete: false
+    private static instance: ControllerService;
+
+    static getInstance() {
+        if (!ControllerService.instance) {
+            ControllerService.instance = new ControllerService();
+        }
+        return ControllerService.instance;
     }
+
+    driverState: ControllerStateItem = this._resetState();
 
     driverStateObserver: BehaviorSubject<ControllerStateItem> =
         new BehaviorSubject<ControllerStateItem>(this.driverState);
 
-    constructor(private zwave: ZWave) {
+    zwave: ZWave = undefined;
+
+    constructor() {
+        this._resetState();
+    }
+    
+    init(zwave: ZWave) {
 
         zwave.on("connected", this._handleConnected.bind(this));
         zwave.on("driver ready", this._handleDriverReady.bind(this));
@@ -58,22 +69,37 @@ export class Controller {
             this._handleDBReady.bind(this));
         zwave.on("controller command", this._handleCommand.bind(this));
         zwave.on("scan complete", this._handleScanComplete.bind(this));
+
+        this.zwave = zwave;
+    }
+
+    private _resetState(): ControllerStateItem {
+        this.driverState = {
+            is_driver_connected: false,
+            is_driver_ready: false,
+            is_driver_failed: false,
+            is_scan_complete: false
+        };
+        return this.driverState;
     }
 
     private _handleConnected(version: string) {
         logger.info(`[driver: connected] version: ${version}`);
         this.driverState.is_driver_connected = true;
+        this._updateStateObserver();
     }
 
     private _handleDriverReady(homeId: number) {
         logger.info(`[driver: ready] home id: ${homeId}`);
         this.driverState.is_driver_ready = true;
+        this._updateStateObserver();
     }
 
     private _handleDriverFailed() {
         logger.info("[driver: failed] ¯\_(ツ)_/¯");
         this.driverState.is_driver_failed = true;
         this.driverState.is_driver_ready = false;
+        this._updateStateObserver();
     }
 
     private _handleDBReady() {
@@ -98,19 +124,40 @@ export class Controller {
     private _handleScanComplete() {
         logger.info("[ctrl] scan complete");
         this.driverState.is_scan_complete = true;
-
-        // this.zwave.healNetwork();
+        this._updateStateObserver();
     }
 
-    _updateStateObserver() {
-        this.driverStateObserver.next(this.driverState);
+    private _updateStateObserver() {
+        this.driverStateObserver.next(this.getState());
     }
 
     isScanComplete(): boolean {
         return this.driverState.is_scan_complete;
     }
 
+    isStarted(): boolean {
+        return this.driverState.is_driver_connected;
+    }
+
     getStateObserver(): BehaviorSubject<ControllerStateItem> {
         return this.driverStateObserver;
+    }
+
+    getState(): ControllerStateItem {
+        return this.driverState;
+    }
+
+    start(): void {
+        if (!this.driverState.is_driver_connected) {
+            this.zwave.connect('/dev/ttyACM0');
+        }
+    }
+
+    stop(): void {
+        if (!this.driverState.is_driver_connected) {
+            return;
+        }
+        this.zwave.disconnect('/dev/ttyACM0');
+        this._resetState();
     }
 }

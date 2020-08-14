@@ -1,11 +1,14 @@
-import express from 'express';
+import express, {
+    Response as ExResponse, Request as ExRequest
+} from 'express';
 import ZWave from 'openzwave-shared';
-import { NodeInfo, Value, ControllerState,
-         ControllerError, Notification
- } from 'openzwave-shared';
-import { NodesController, NodeValueDatasource } from './nodes';
-import { Controller } from './controller';
+import { ControllerService } from './ControllerService';
+import { NetworkService } from './NetworkService';
 import fs from 'fs';
+import bodyParser from 'body-parser';
+import { RegisterRoutes } from './tsoa/routes';
+import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 
 interface BackendConfig {
@@ -30,6 +33,23 @@ if (fs.existsSync('./config.json')) {
 console.log("config: ", config);
 
 const app = express();
+
+app.use(cors());
+
+app.use(
+    bodyParser.urlencoded({
+        extended: true,
+    })
+);
+app.use(bodyParser.json());
+app.use("/docs", swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
+    return res.send(
+        swaggerUi.generateHTML(await import("./tsoa/swagger.json"))
+    );
+});
+
+RegisterRoutes(app);
+
 const port = 31337;
 
 const zwave = new ZWave({
@@ -37,61 +57,51 @@ const zwave = new ZWave({
     ConfigPath: './zwave.db/',
     LogFileName: './ozw.log',
     Logging: true,
-    NotifyTransactions: true,
+    // NotifyTransactions: true,
+
 });
 
+zwave.on("node event", (nodeId, data) => {
+    console.log(`[node: event] id: ${nodeId}, data:`, data);
+});
 
-let node_controller: NodesController = new NodesController(zwave);
-let node_datasource: NodeValueDatasource = new NodeValueDatasource(zwave);
-let controller: Controller = new Controller(zwave);
+zwave.on("notification", (nodeId, notif, help) => {
+    console.log(`[notification] id: ${nodeId}, help: ${help}, notif: `,
+        notif);
+});
 
+let controller: ControllerService = ControllerService.getInstance();
+controller.init(zwave);
 
-zwave.connect('/dev/ttyACM0');
+let network_controller: NetworkService = NetworkService.getInstance();
 
-
-
-function refreshNodeInfo() {
-    if (!controller.isScanComplete()) {
-        return false;
-    }
-    let nodes = Object.values(node_controller.nodes);
-    nodes.forEach((node) => {
-        console.log(`[refresh node] id: ${node.id}`);
-        zwave.refreshNodeInfo(node.id);
-    });
-    return true;
-}
+//zwave.connect('/dev/ttyACM0');
 
 
+/*
 app.get('/', (req, res) => {
-    res.send('Foo Bar Baz');
+    res.send('Foo Bar Baz ASDADASDASD');
 });
 
-app.get('/nodes', (req, res) => {
-    res.send(Object.values(node_controller.nodes));
+
+app.get('/network/state', (req, res) => {
+    res.send(network_controller.getState());
 });
 
-app.get('/nodes/refresh', (req, res) => {
-    let ret = refreshNodeInfo();
-    res.send(ret);
+app.get('/controller/state', (req, res) => {
+    res.send(controller.getState());
 });
 
-app.get('/nodes/:nodeId', (req, res) => {
-    let id = req.params.nodeId;
-    if (!(id in node_controller.nodes)) {
-        res.send({});
-    }
-    res.send(node_controller.nodes[id]);
-});
+app.get('/network/status', (req, res) => {
 
-app.get('/nodes/:nodeId/values', (req, res) => {
-    let id = req.params.nodeId;
-    if (!(id in node_controller.nodes)) {
-        res.send([]);
-    }
-    let values = node_datasource.getValues(+id);
-    res.send(values);
+    res.send({
+        'server': {
+
+        }
+    })
+
 });
+*/
 
 app.listen(config.server_port, config.server_host, err => {
     if (err) {
@@ -103,6 +113,7 @@ app.listen(config.server_port, config.server_host, err => {
 
 // stuff we haven't figured out yet where to leave, or when to drop.
 //
+/*
 zwave.on("notification", (nodeId, message) => {
     console.log(`[node ${nodeId}] message: ${Notification[message]}`);
 });
@@ -136,7 +147,7 @@ zwave.on("scan complete", () => {
 zwave.on("node event", (nodeId, data) => {
     console.log(`[node ${nodeId}] data = `, data);
 });
-
+*/
 
 //
 // still here just in case we need it.
