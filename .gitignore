@@ -1,0 +1,7 @@
+/crap/
+/venv
+*.log
+**/__pycache__
+**/.vscode
+**/node_modules
+ozw-tui/fancything
