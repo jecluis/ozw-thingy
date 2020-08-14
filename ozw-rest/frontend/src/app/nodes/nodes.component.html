@@ -21,14 +21,24 @@
     </app-node-details-tab>
   </mat-sidenav>
   <mat-sidenav-content>
-    <mat-toolbar>
+    <mat-toolbar fxLayout="row" fxLayoutAlign="space-between center">
+      <span class="mat-h1 toolbar-heading">Nodes</span>
+      <span *ngIf="!isNetworkAvailable()">Please
+        <a routerLink="/settings" routerLinkActive="active">Start</a>
+        the Network
+      </span>
+      <span class="toolbar-heading">
+        < network: <strong>{{network_state | uppercase }}</strong> >
+      </span>
+    <!--
       <span class="mat-h1 toolbar-heading">Nodes</span>
       <span style="flex: 1 1 auto"></span>
       <span class="toolbar-heading">
         < network: <strong>{{network_state | uppercase }}</strong> >
       </span>
+    -->
     </mat-toolbar>
-    <app-nodes-table
+    <app-nodes-table *ngIf="isNetworkAvailable()"
       (selected_node)="open_node_details($event)">
     </app-nodes-table>
     <!-- Add Content Here -->

@@ -28,7 +28,10 @@ export class NodesTableComponent implements AfterViewInit, OnInit {
   dataSource: NodesTableDataSource;
 
   /** Columns displayed in the table. Columns IDs can be added, removed, or reordered. */
-  displayedColumns = ['id', 'product', 'type', 'state', 'capabilities'];
+  displayedColumns = [
+      'id', 'product', 'type', 'state', 'capabilities',
+      'lastseen', 'metering', 'insights'
+  ];
   expandedNode: NodesTableItem | null;
 
   @Output() selected_node = new EventEmitter<NodesTableItem>();

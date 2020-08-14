@@ -50,7 +50,11 @@ export class NodesComponent implements OnInit {
   }
 
   getNetworkState(): string {
-    return this.network.get_state().toString();
+    return this.network.get_network_state().toString();
+  }
+
+  isNetworkAvailable(): boolean {
+      return this.network.is_available();
   }
 
   constructor(private network: NetworkService) {}

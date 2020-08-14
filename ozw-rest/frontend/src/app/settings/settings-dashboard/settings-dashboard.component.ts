@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SettingsFormComponent } from '../settings-form/settings-form.component';
 import { NetworkService, SimpleStatusItem } from 'src/app/network/network.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 

@@ -7,20 +7,53 @@ import { TypeScriptEmitter } from '@angular/compiler';
 import { HttpClient } from '@angular/common/http';
 
 
-// TODO: Replace this with your own data model type
-export interface NodesTableRawItem {
-  node_id: number;
-  product_name: string;
-  node_type: string;
-  state: string;
-  proto_stage: string;
-  capabilities: {};
+export interface NodeInfoItem {
+    manufacturer: string;
+    manufacturerid: string;
+    product: string;
+    producttype: string;
+    productid: string;
+    type: string;
+    name: string;
+    loc: string;
 }
+
+export enum NodeItemState {
+    Nop = 2,
+    NodeAwake = 3,
+    NodeSleep = 4,
+    NodeDead = 5,
+    NodeAlive = 6
+}
+
+export interface NodeItemCaps {
+    is_listening: boolean;
+    is_routing: boolean;
+    is_beaming: boolean;
+    is_controller: boolean;
+    is_primary_controller: boolean;
+}
+
+export interface NodesTableRawItem {
+    id: number;
+    info: NodeInfoItem;
+    state: NodeItemState;
+    ready: boolean;
+    caps: NodeItemCaps;
+    class: NodeClassItem;
+    last_seen?: string;
+}
+
 
 export interface NodeControllerCapsRawItem {
   is_primary: boolean;
   is_bridge: boolean;
   is_static_updater: boolean;
+}
+
+export interface NodeClassItem {
+    is_meter: boolean;
+    is_switch: boolean;
 }
 
 export interface NodesTableItem {
@@ -31,6 +64,8 @@ export interface NodesTableItem {
   capabilities: {};
   is_controller: boolean;
   controller_caps?: {};
+  class: NodeClassItem;
+  last_seen?: string;
 }
 
 const enum State {
@@ -123,13 +158,28 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
 
   private _translateRawToItem(items: NodesTableRawItem[]): NodesTableItem[] {
 
+    function _translateState(state: NodeItemState): string {
+        console.log(`state: ${state}`);
+        switch (state) {
+            case NodeItemState.NodeAlive:
+                return "ready";
+            case NodeItemState.NodeAwake:
+                return "awake";
+            case NodeItemState.NodeDead:
+                return "failed";
+            case NodeItemState.NodeSleep:
+            default:
+                return "sleeping";
+        }
+    }
+
     let translated_items: NodesTableItem[] = [];
 
     items.forEach(item => {
-      let type = item.node_type;
-      let state = item.state;
-      let product = item.product_name;
-      let is_controller = item.capabilities['is_controller'];
+      let type = item.info.type;
+      let state = _translateState(item.state);
+      let product = item.info.product;
+      let is_controller = item.caps.is_controller;
       let controller_caps = {};
 
       if (type.length == 0) {
@@ -140,17 +190,25 @@ export class NodesTableDataSource extends DataSource<NodesTableItem> {
       }
 
       let translated_item: NodesTableItem = { 
-        id: item.node_id, product: product, type: type,
-        state: state, capabilities: item.capabilities,
+        id: item.id, product: product, type: type,
+        state: state, capabilities: item.caps,
+        class: item.class,
         is_controller: is_controller
       };
       if (translated_item.is_controller) {
         console.log("item is controller: ", translated_item);
-        let ctrl_caps: NodeControllerCapsRawItem =
-          item.capabilities['controller'];
+        let ctrl_caps: NodeControllerCapsRawItem = {
+            is_primary: item.caps.is_primary_controller,
+            is_bridge: false,
+            is_static_updater: false
+        };
+          //item.capabilities['controller'];
         console.log("controller caps: ", ctrl_caps);
         translated_item.controller_caps = ctrl_caps;        
       }
+      let last_seen = (!!item.last_seen ? item.last_seen : "");
+      translated_item.last_seen = new Date(last_seen).toUTCString();
+      console.log("translated item: ", translated_item);
       translated_items.push(translated_item);
     });
 

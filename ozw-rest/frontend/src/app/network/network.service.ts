@@ -18,11 +18,20 @@ export enum ControllerState {
   UNKNOWN   = "unknown"
 }
 
+/*
 interface ServerStateItem {
   is_running: boolean;
   is_starting: boolean;
   is_stopping: boolean;
   device: string;
+}
+*/
+
+interface ServerStateItem {
+    is_driver_connected: boolean;
+    is_driver_ready: boolean;
+    is_driver_failed: boolean;
+    is_scan_complete: boolean;
 }
 
 interface NetworkStateItem {
@@ -36,7 +45,7 @@ interface NetworkStateItem {
 }
 
 interface FullStatusItem {
-  server: ServerStateItem;
+  driver: ServerStateItem;
   network: NetworkStateItem;
 }
 
@@ -87,7 +96,8 @@ export class NetworkService {
         this.simplestatus_subject_observer.next({
           server_state: this.get_server_state(),
           network_state: this.get_network_state(),
-          device: status.server.device,
+          //device: status.server.device,
+          device: "",
           network_state_str: status.network.state_str
         });
       },
@@ -99,15 +109,18 @@ export class NetworkService {
   }
 
   setState(status: FullStatusItem) {
-    let server_state = status.server;
+    let server_state = status.driver;
     let network_state = status.network;
     
     this.server_state_str = ControllerState.STOPPED;
-    if (server_state.is_starting) {
+
+    if (server_state.is_driver_connected) {
       this.server_state_str = ControllerState.STARTING;
-    } else if (server_state.is_stopping) {
-      this.server_state_str = ControllerState.STOPPING;
-    } else if (server_state.is_running) {
+    } else if (!server_state.is_driver_connected) {
+      this.server_state_str = ControllerState.STOPPED;
+    }
+
+    if (server_state.is_driver_ready) {
       this.server_state_str = ControllerState.RUNNING;
     }
 
